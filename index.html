@@ -70,6 +70,11 @@
       font-size: 1.1rem;
       flex-grow: 1;
     }
+    .film-director {
+      font-size: 0.9rem;
+      color: #d1d5db;
+      margin-top: 0.2rem;
+    }
     .film-date, .film-average {
       font-size: 0.9rem;
       color: #d1d5db;
@@ -158,8 +163,12 @@
 <body>
   <h1>CineBook 🎬</h1>
   <form id="filmForm" autocomplete="off">
-    <label for="title">Titre du film</label>
+    <label for="title">Titre du film *</label>
     <input type="text" id="title" required />
+
+    <label for="director">Réalisateur</label>
+    <input type="text" id="director" list="directorList" placeholder="Ajouter un réalisateur ou en choisir un" />
+    <datalist id="directorList"></datalist>
 
     <label for="date">Date de visionnage</label>
     <input type="date" id="date" />
@@ -192,6 +201,7 @@
       <option value="dateAsc">Date (du plus ancien)</option>
       <option value="avgDesc">Note moyenne (la plus haute)</option>
       <option value="avgAsc">Note moyenne (la plus basse)</option>
+      <option value="directorAsc">Réalisateur (A-Z)</option>
     </select>
   </div>
 
@@ -203,8 +213,33 @@
     const filmList = document.getElementById('filmList');
     const triSelect = document.getElementById('tri');
     const addUpdateBtn = document.getElementById('addUpdateBtn');
+    const directorList = document.getElementById('directorList');
 
     let editingIndex = -1; // Pour savoir si on est en mode modification ou ajout
+
+    // Fonction pour récupérer les réalisateurs uniques
+    function getUniqueDirectors(films) {
+      const directors = new Set();
+      films.forEach(film => {
+        if (film.director && film.director.trim() !== '') {
+          directors.add(film.director.trim());
+        }
+      });
+      return Array.from(directors).sort();
+    }
+
+    // Fonction pour mettre à jour la datalist des réalisateurs
+    function updateDirectorDatalist() {
+      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      const uniqueDirectors = getUniqueDirectors(films);
+      directorList.innerHTML = ''; // Vide la liste existante
+
+      uniqueDirectors.forEach(director => {
+        const option = document.createElement('option');
+        option.value = director;
+        directorList.appendChild(option);
+      });
+    }
 
     // Charge films et trie selon la sélection
     function chargerFilms() {
@@ -221,6 +256,10 @@
           return moyenne(b) - moyenne(a);
         } else if (tri === 'avgAsc') {
           return moyenne(a) - moyenne(b);
+        } else if (tri === 'directorAsc') {
+          const directorA = a.director ? a.director.toLowerCase() : '';
+          const directorB = b.director ? b.director.toLowerCase() : '';
+          return directorA.localeCompare(directorB);
         }
       });
 
@@ -231,16 +270,22 @@
         div.className = 'film';
 
         const avgNote = moyenne(film).toFixed(2);
+        const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
+
 
         div.innerHTML = `
           <div class="film-header">
-            <div class="film-title">${film.title}</div>
+            <div>
+              <div class="film-title">${film.title}</div>
+              ${directorDisplay}
+            </div>
             <div>
               <span class="film-average">⭐ ${avgNote}</span>
               <span class="film-date">${formatDate(film.date)}</span>
             </div>
           </div>
           <div class="film-details">
+            <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
             <p><strong>Note globale :</strong> ${film.global !== undefined && film.global !== '' ? film.global + '/10' : 'N/A'}</p>
             <p><strong>Scénario :</strong> ${film.scenario !== undefined && film.scenario !== '' ? film.scenario + '/10' : 'N/A'}</p>
             <p><strong>Musique :</strong> ${film.musique !== undefined && film.musique !== '' ? film.musique + '/10' : 'N/A'}</p>
@@ -265,6 +310,7 @@
             films.splice(filmIndex, 1);
             localStorage.setItem('cinebook_films', JSON.stringify(films));
             chargerFilms();
+            updateDirectorDatalist(); // Mettre à jour la datalist après suppression
           }
         });
 
@@ -276,6 +322,7 @@
 
             // Remplir le formulaire avec les données du film
             form.title.value = filmToEdit.title;
+            form.director.value = filmToEdit.director || ''; // Nouveau champ
             form.date.value = filmToEdit.date;
             form.global.value = filmToEdit.global;
             form.scenario.value = filmToEdit.scenario;
@@ -301,6 +348,7 @@
 
         filmList.appendChild(div);
       });
+      updateDirectorDatalist(); // Toujours mettre à jour la datalist après avoir chargé/affiché les films
     }
 
     function moyenne(film) {
@@ -341,6 +389,7 @@
 
       const film = {
         title: form.title.value.trim(),
+        director: form.director.value.trim(), // Ajout du réalisateur
         date: form.date.value,
         global: form.global.value,
         scenario: form.scenario.value,
@@ -370,7 +419,10 @@
 
     triSelect.addEventListener('change', chargerFilms);
 
-    window.addEventListener('load', chargerFilms);
+    window.addEventListener('load', () => {
+        chargerFilms();
+        updateDirectorDatalist(); // Charger la datalist au chargement initial
+    });
   </script>
 </body>
 </html>
