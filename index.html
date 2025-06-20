@@ -104,19 +104,21 @@
     select {
       max-width: 180px;
     }
-    /* Bouton suppression */
+    /* Bouton suppression dans détails */
     .btn-delete {
-      background: transparent;
+      background: #ef4444;
       border: none;
-      color: #ef4444;
-      font-size: 1.2rem;
+      color: white;
+      font-size: 1rem;
       cursor: pointer;
-      padding: 0 0.2rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.3rem;
+      margin-top: 0.5rem;
       user-select: none;
-      flex-shrink: 0;
+      transition: background-color 0.3s ease;
     }
     .btn-delete:hover {
-      color: #b91c1c;
+      background: #b91c1c;
     }
     @media (max-width: 640px) {
       .film-header {
@@ -226,7 +228,6 @@
               <span class="film-average">⭐ ${avgNote}</span>
               <span class="film-date">${formatDate(film.date)}</span>
             </div>
-            <button class="btn-delete" title="Supprimer ce film">🗑️</button>
           </div>
           <div class="film-details">
             <p><strong>Note globale :</strong> ${film.global}/10</p>
@@ -235,6 +236,7 @@
             <p><strong>Visuel :</strong> ${film.visuel}/10</p>
             <p><strong>Acteurs :</strong> ${film.acteur}/10</p>
             <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
+            <button class="btn-delete" title="Supprimer ce film">🗑️ Supprimer</button>
           </div>
         `;
 
@@ -242,9 +244,8 @@
         const details = div.querySelector('.film-details');
         const btnDelete = div.querySelector('.btn-delete');
 
-        // Clic sur la corbeille : supprimer film
         btnDelete.addEventListener('click', e => {
-          e.stopPropagation(); // Empêche toggle détails
+          e.stopPropagation(); // empêcher toggle détails
           if (confirm(`Supprimer "${film.title}" ?`)) {
             let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
             films.splice(index, 1);
@@ -253,7 +254,6 @@
           }
         });
 
-        // Clic pour toggle détails (sauf si clic sur corbeille)
         header.addEventListener('click', () => {
           const visible = details.style.display === 'block';
 
