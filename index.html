@@ -63,16 +63,18 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 1rem;
     }
     .film-title {
       font-weight: bold;
       font-size: 1.1rem;
+      flex-grow: 1;
     }
     .film-date, .film-average {
       font-size: 0.9rem;
       color: #d1d5db;
-      margin-left: 1rem;
       white-space: nowrap;
+      margin-left: 0.8rem;
     }
     .film-details {
       margin-top: 0.5rem;
@@ -101,6 +103,20 @@
     }
     select {
       max-width: 180px;
+    }
+    /* Bouton suppression */
+    .btn-delete {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0 0.2rem;
+      user-select: none;
+      flex-shrink: 0;
+    }
+    .btn-delete:hover {
+      color: #b91c1c;
     }
     @media (max-width: 640px) {
       .film-header {
@@ -210,6 +226,7 @@
               <span class="film-average">⭐ ${avgNote}</span>
               <span class="film-date">${formatDate(film.date)}</span>
             </div>
+            <button class="btn-delete" title="Supprimer ce film">🗑️</button>
           </div>
           <div class="film-details">
             <p><strong>Note globale :</strong> ${film.global}/10</p>
@@ -221,9 +238,23 @@
           </div>
         `;
 
-        // Clic pour toggle détails
-        div.querySelector('.film-header').addEventListener('click', () => {
-          const details = div.querySelector('.film-details');
+        const header = div.querySelector('.film-header');
+        const details = div.querySelector('.film-details');
+        const btnDelete = div.querySelector('.btn-delete');
+
+        // Clic sur la corbeille : supprimer film
+        btnDelete.addEventListener('click', e => {
+          e.stopPropagation(); // Empêche toggle détails
+          if (confirm(`Supprimer "${film.title}" ?`)) {
+            let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+            films.splice(index, 1);
+            localStorage.setItem('cinebook_films', JSON.stringify(films));
+            chargerFilms();
+          }
+        });
+
+        // Clic pour toggle détails (sauf si clic sur corbeille)
+        header.addEventListener('click', () => {
           const visible = details.style.display === 'block';
 
           // Fermer tous les autres détails
