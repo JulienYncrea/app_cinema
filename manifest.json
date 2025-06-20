@@ -1,10 +1,10 @@
 {
-    "name": "Ma Super App",
-    "short_name": "MaPWA",
-    "start_url": "index.html",
+    "name": "CineBook",
+    "short_name": "CineBook",
+    "start_url": ".",
     "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#1976d2",
+    "background_color": "#111827",
+    "theme_color": "#111827",
     "icons": [
       {
         "src": "icon.png",

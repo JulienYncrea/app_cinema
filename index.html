@@ -3,14 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ma PWA</title>
+  <title>CineBook</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.png" />
-  <meta name="theme-color" content="#1976d2" />
-  <script src="sw-register.js" defer></script>
+  <meta name="theme-color" content="#111827" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 1rem;
+      background: #1f2937;
+      color: #f9fafb;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #fbbf24;
+    }
+    form, .film-list {
+      max-width: 600px;
+      margin: 1rem auto;
+      background: #374151;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    label {
+      display: block;
+      margin-top: 0.5rem;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.2rem;
+      border: none;
+      border-radius: 0.25rem;
+    }
+    button {
+      margin-top: 1rem;
+      background: #fbbf24;
+      color: #1f2937;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .film {
+      background: #111827;
+      padding: 0.5rem;
+      margin-top: 1rem;
+      border-radius: 0.5rem;
+    }
+    .film p {
+      margin: 0.2rem 0;
+    }
+  </style>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker enregistré:', reg.scope))
+          .catch(err => console.error('Erreur SW:', err));
+      });
+    }
+  </script>
 </head>
 <body>
-  <h1>Bienvenue dans ma PWA 🎉</h1>
-  <p>Ceci est une application installable et hors ligne !</p>
+  <h1>CineBook 🎬</h1>
+  <form id="filmForm">
+    <label for="title">Titre du film</label>
+    <input type="text" id="title" required />
+
+    <label for="global">Note globale (0-10)</label>
+    <input type="number" id="global" min="0" max="10" required />
+
+    <label for="scenario">Scénario (0-10)</label>
+    <input type="number" id="scenario" min="0" max="10" required />
+
+    <label for="musique">Musique (0-10)</label>
+    <input type="number" id="musique" min="0" max="10" required />
+
+    <label for="visuel">Visuel (0-10)</label>
+    <input type="number" id="visuel" min="0" max="10" required />
+
+    <label for="acteur">Acteurs (0-10)</label>
+    <input type="number" id="acteur" min="0" max="10" required />
+
+    <button type="submit">Ajouter 🎥</button>
+  </form>
+
+  <h2>🎞️ Films vus</h2>
+  <div class="film-list" id="filmList"></div>
+
+  <script>
+    const form = document.getElementById('filmForm');
+    const filmList = document.getElementById('filmList');
+
+    function chargerFilms() {
+      const films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      filmList.innerHTML = '';
+      films.forEach(film => {
+        const div = document.createElement('div');
+        div.className = 'film';
+        div.innerHTML = `
+          <h3>${film.title}</h3>
+          <p>Note globale : ${film.global}/10</p>
+          <p>Scénario : ${film.scenario}/10</p>
+          <p>Musique : ${film.musique}/10</p>
+          <p>Visuel : ${film.visuel}/10</p>
+          <p>Acteurs : ${film.acteur}/10</p>
+        `;
+        filmList.appendChild(div);
+      });
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const film = {
+        title: form.title.value,
+        global: form.global.value,
+        scenario: form.scenario.value,
+        musique: form.musique.value,
+        visuel: form.visuel.value,
+        acteur: form.acteur.value
+      };
+      const films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      films.push(film);
+      localStorage.setItem('cinebook_films', JSON.stringify(films));
+      form.reset();
+      chargerFilms();
+    });
+
+    window.addEventListener('load', chargerFilms);
+  </script>
 </body>
 </html>
