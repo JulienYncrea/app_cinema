@@ -88,8 +88,9 @@
     .film-details p {
       margin: 0.2rem 0;
     }
-    .film-details input, .film-details textarea {
-      margin: 0.2rem 0;
+    textarea {
+      resize: vertical;
+      min-height: 60px;
     }
     .controls {
       display: flex;
@@ -103,6 +104,7 @@
     select {
       max-width: 180px;
     }
+    /* Bouton suppression dans détails */
     .btn-delete {
       background: #ef4444;
       border: none;
@@ -117,18 +119,6 @@
     }
     .btn-delete:hover {
       background: #b91c1c;
-    }
-    .btn-edit {
-      background: #10b981;
-      border: none;
-      color: white;
-      padding: 0.3rem 0.6rem;
-      border-radius: 0.3rem;
-      cursor: pointer;
-      margin-top: 0.5rem;
-    }
-    .btn-edit:hover {
-      background: #059669;
     }
     @media (max-width: 640px) {
       .film-header {
@@ -155,122 +145,173 @@
           .catch(err => console.error('Erreur SW:', err));
       });
     }
+  </script>
+</head>
+<body>
+  <h1>CineBook 🎬</h1>
+  <form id="filmForm" autocomplete="off">
+    <label for="title">Titre du film</label>
+    <input type="text" id="title" required />
 
-    function moyenne(film) {
-      const notes = ['global', 'scenario', 'musique', 'visuel', 'acteur']
-        .map(k => Number(film[k]))
-        .filter(v => !isNaN(v));
-      return notes.length ? (notes.reduce((a, b) => a + b, 0) / notes.length).toFixed(1) : '-';
-    }
+    <label for="date">Date de visionnage</label>
+    <input type="date" id="date" required />
 
-    const films = JSON.parse(localStorage.getItem('films') || '[]');
-    const list = document.createElement('div');
-    list.className = 'film-list';
-    document.body.appendChild(list);
+    <label for="global">Note globale (0-10)</label>
+    <input type="number" id="global" min="0" max="10" required />
 
-    function render() {
-      list.innerHTML = '';
+    <label for="scenario">Scénario (0-10)</label>
+    <input type="number" id="scenario" min="0" max="10" required />
+
+    <label for="musique">Musique (0-10)</label>
+    <input type="number" id="musique" min="0" max="10" required />
+
+    <label for="visuel">Visuel (0-10)</label>
+    <input type="number" id="visuel" min="0" max="10" required />
+
+    <label for="acteur">Acteurs (0-10)</label>
+    <input type="number" id="acteur" min="0" max="10" required />
+
+    <label for="commentaire">Commentaire</label>
+    <textarea id="commentaire" placeholder="Votre avis sur le film..."></textarea>
+
+    <button type="submit">Ajouter 🎥</button>
+  </form>
+
+  <div class="controls">
+    <label for="tri">Trier par :</label>
+    <select id="tri">
+      <option value="dateDesc" selected>Date (du plus récent)</option>
+      <option value="dateAsc">Date (du plus ancien)</option>
+      <option value="avgDesc">Note moyenne (la plus haute)</option>
+      <option value="avgAsc">Note moyenne (la plus basse)</option>
+    </select>
+  </div>
+
+  <h2>🎞️ Films vus</h2>
+  <div class="film-list" id="filmList"></div>
+
+  <script>
+    const form = document.getElementById('filmForm');
+    const filmList = document.getElementById('filmList');
+    const triSelect = document.getElementById('tri');
+
+    // Charge films et trie selon la sélection
+    function chargerFilms() {
+      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+
+      // Trie selon la sélection
+      const tri = triSelect.value;
+      films.sort((a, b) => {
+        if (tri === 'dateDesc') {
+          return new Date(b.date) - new Date(a.date);
+        } else if (tri === 'dateAsc') {
+          return new Date(a.date) - new Date(b.date);
+        } else if (tri === 'avgDesc') {
+          return moyenne(b) - moyenne(a);
+        } else if (tri === 'avgAsc') {
+          return moyenne(a) - moyenne(b);
+        }
+      });
+
+      filmList.innerHTML = '';
+
       films.forEach((film, index) => {
         const div = document.createElement('div');
         div.className = 'film';
 
-        const header = document.createElement('div');
-        header.className = 'film-header';
+        const avgNote = moyenne(film).toFixed(2);
 
-        const title = document.createElement('div');
-        title.className = 'film-title';
-        title.textContent = film.nom;
+        div.innerHTML = `
+          <div class="film-header">
+            <div class="film-title">${film.title}</div>
+            <div>
+              <span class="film-average">⭐ ${avgNote}</span>
+              <span class="film-date">${formatDate(film.date)}</span>
+            </div>
+          </div>
+          <div class="film-details">
+            <p><strong>Note globale :</strong> ${film.global}/10</p>
+            <p><strong>Scénario :</strong> ${film.scenario}/10</p>
+            <p><strong>Musique :</strong> ${film.musique}/10</p>
+            <p><strong>Visuel :</strong> ${film.visuel}/10</p>
+            <p><strong>Acteurs :</strong> ${film.acteur}/10</p>
+            <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
+            <button class="btn-delete" title="Supprimer ce film">🗑️ Supprimer</button>
+          </div>
+        `;
 
-        const avg = document.createElement('div');
-        avg.className = 'film-average';
-        avg.textContent = `🎯 ${moyenne(film)}`;
+        const header = div.querySelector('.film-header');
+        const details = div.querySelector('.film-details');
+        const btnDelete = div.querySelector('.btn-delete');
 
-        const date = document.createElement('div');
-        date.className = 'film-date';
-        date.textContent = `📅 ${film.date || ''}`;
-
-        header.appendChild(title);
-        header.appendChild(avg);
-        header.appendChild(date);
-
-        const details = document.createElement('div');
-        details.className = 'film-details';
-
-        for (let key of ['global', 'scenario', 'musique', 'visuel', 'acteur']) {
-          if (film[key] !== undefined && film[key] !== '') {
-            const p = document.createElement('p');
-            p.textContent = `${key} : ${film[key]}`;
-            details.appendChild(p);
-          }
-        }
-
-        if (film.commentaire) {
-          const p = document.createElement('p');
-          p.textContent = `🗒️ ${film.commentaire}`;
-          details.appendChild(p);
-        }
-
-        const editBtn = document.createElement('button');
-        editBtn.textContent = '✏️ Modifier';
-        editBtn.className = 'btn-edit';
-        editBtn.onclick = () => {
-          const newGlobal = prompt('Note générale (0-10)', film.global);
-          const newScenario = prompt('Note scénario', film.scenario);
-          const newMusique = prompt('Note musique', film.musique);
-          const newVisuel = prompt('Note visuel', film.visuel);
-          const newActeur = prompt('Note acteur', film.acteur);
-          const newComment = prompt('Commentaire', film.commentaire);
-          const newDate = prompt('Date', film.date);
-          Object.assign(film, {
-            global: newGlobal,
-            scenario: newScenario,
-            musique: newMusique,
-            visuel: newVisuel,
-            acteur: newActeur,
-            commentaire: newComment,
-            date: newDate
-          });
-          save();
-        };
-        details.appendChild(editBtn);
-
-        const del = document.createElement('button');
-        del.textContent = '🗑️ Supprimer';
-        del.className = 'btn-delete';
-        del.onclick = () => {
-          if (confirm('Supprimer ce film ?')) {
+        btnDelete.addEventListener('click', e => {
+          e.stopPropagation(); // empêcher toggle détails
+          if (confirm(`Supprimer "${film.title}" ?`)) {
+            let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
             films.splice(index, 1);
-            save();
-          }
-        };
-        details.appendChild(del);
-
-        div.appendChild(header);
-        div.appendChild(details);
-
-        let open = false;
-        div.addEventListener('click', (e) => {
-          if (e.target === editBtn || e.target === del) return;
-          document.querySelectorAll('.film-details').forEach(el => el.style.display = 'none');
-          if (!open) {
-            details.style.display = 'block';
-            open = true;
-          } else {
-            details.style.display = 'none';
-            open = false;
+            localStorage.setItem('cinebook_films', JSON.stringify(films));
+            chargerFilms();
           }
         });
 
-        list.appendChild(div);
+        header.addEventListener('click', () => {
+          const visible = details.style.display === 'block';
+
+          // Fermer tous les autres détails
+          document.querySelectorAll('.film-details').forEach(d => d.style.display = 'none');
+
+          details.style.display = visible ? 'none' : 'block';
+        });
+
+        filmList.appendChild(div);
       });
     }
 
-    function save() {
-      localStorage.setItem('films', JSON.stringify(films));
-      render();
+    function moyenne(film) {
+      return (
+        (Number(film.global) +
+         Number(film.scenario) +
+         Number(film.musique) +
+         Number(film.visuel) +
+         Number(film.acteur)) / 5
+      );
     }
 
-    render();
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+
+      // Validation simple
+      if (!form.title.value.trim()) return alert('Le titre est requis');
+      if (!form.date.value) return alert('La date est requise');
+
+      const film = {
+        title: form.title.value.trim(),
+        date: form.date.value,
+        global: form.global.value,
+        scenario: form.scenario.value,
+        musique: form.musique.value,
+        visuel: form.visuel.value,
+        acteur: form.acteur.value,
+        commentaire: form.commentaire.value.trim()
+      };
+
+      const films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      films.push(film);
+      localStorage.setItem('cinebook_films', JSON.stringify(films));
+
+      form.reset();
+      chargerFilms();
+    });
+
+    triSelect.addEventListener('change', chargerFilms);
+
+    window.addEventListener('load', chargerFilms);
   </script>
 </body>
 </html>
