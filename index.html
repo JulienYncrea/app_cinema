@@ -18,7 +18,21 @@
       text-align: center;
       color: #fbbf24;
     }
-    form, .film-list, .controls {
+    /* Style pour le titre principal et le logo cliquable */
+    #mainTitle {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem; /* Espace entre le texte et le logo */
+      color: #fbbf24;
+      cursor: pointer; /* Indique que le titre est cliquable */
+    }
+    #mainTitle .logo {
+        margin-left: 0.5rem; /* Espace le logo du texte */
+        font-size: 1.2em; /* Taille du logo (emoji) */
+    }
+
+    form, .film-list, .controls, .director-ranking-container {
       max-width: 600px;
       margin: 1rem auto;
       background: #374151;
@@ -130,7 +144,40 @@
         background: #3b82f6; /* Bleu pour modifier */
     }
     .btn-edit:hover {
-        background: #1d4ed8;
+      background: #1d4ed8;
+    }
+
+    /* Styles pour le classement des réalisateurs */
+    .director-ranking-container {
+      margin-top: 2rem;
+      background: #374151;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    .director-ranking-container h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: #fbbf24;
+    }
+    .director-ranking-list {
+      list-style: none;
+      padding: 0;
+    }
+    .director-ranking-list li {
+      background: #111827;
+      padding: 0.7rem 1rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .director-ranking-list li span:first-child {
+      font-weight: bold;
+    }
+    .director-ranking-list li span:last-child {
+      color: #fbbf24;
+      font-weight: bold;
     }
 
     @media (max-width: 640px) {
@@ -161,7 +208,8 @@
   </script>
 </head>
 <body>
-  <h1>CineBook 🎬</h1>
+  <h1 id="mainTitle">CineBook <span class="logo">🎬</span></h1>
+
   <form id="filmForm" autocomplete="off">
     <label for="title">Titre du film *</label>
     <input type="text" id="title" required />
@@ -208,12 +256,20 @@
   <h2>🎞️ Films vus</h2>
   <div class="film-list" id="filmList"></div>
 
+  <div class="director-ranking-container" id="directorRanking">
+    <h2>🏆 Classement des Réalisateurs</h2>
+    <ul class="director-ranking-list" id="directorRankingList">
+      </ul>
+  </div>
+
   <script>
     const form = document.getElementById('filmForm');
     const filmList = document.getElementById('filmList');
     const triSelect = document.getElementById('tri');
     const addUpdateBtn = document.getElementById('addUpdateBtn');
     const directorList = document.getElementById('directorList');
+    const directorRankingList = document.getElementById('directorRankingList'); // Nouvel élément pour le classement
+    const mainTitle = document.getElementById('mainTitle'); // Titre principal cliquable
 
     let editingIndex = -1; // Pour savoir si on est en mode modification ou ajout
 
@@ -238,6 +294,64 @@
         const option = document.createElement('option');
         option.value = director;
         directorList.appendChild(option);
+      });
+    }
+
+    // Fonction pour calculer la moyenne d'un film
+    function moyenne(film) {
+      let totalNotes = 0;
+      let compteurNotes = 0;
+
+      const notes = ['global', 'scenario', 'musique', 'visuel', 'acteur'];
+
+      notes.forEach(noteType => {
+        const value = Number(film[noteType]);
+        // Vérifie si la valeur est un nombre, n'est pas vide et est dans la plage 0-10
+        if (!isNaN(value) && film[noteType] !== '' && value >= 0 && value <= 10) {
+          totalNotes += value;
+          compteurNotes++;
+        }
+      });
+      
+      return compteurNotes > 0 ? totalNotes / compteurNotes : 0;
+    }
+
+    // Fonction pour calculer et afficher le classement des réalisateurs
+    function displayDirectorRanking() {
+      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      const directorScores = {}; // { 'Réalisateur': { totalScore: X, filmCount: Y } }
+
+      films.forEach(film => {
+        if (film.director && film.director.trim() !== '') {
+          const directorName = film.director.trim();
+          const filmScore = moyenne(film);
+
+          if (!directorScores[directorName]) {
+            directorScores[directorName] = { totalScore: 0, filmCount: 0 };
+          }
+          directorScores[directorName].totalScore += filmScore;
+          directorScores[directorName].filmCount++;
+        }
+      });
+
+      const rankedDirectors = Object.keys(directorScores)
+        .map(director => ({
+          name: director,
+          averageScore: directorScores[director].totalScore / directorScores[director].filmCount
+        }))
+        .sort((a, b) => b.averageScore - a.averageScore); // Trier par moyenne décroissante
+
+      directorRankingList.innerHTML = ''; // Vider la liste existante
+
+      if (rankedDirectors.length === 0) {
+        directorRankingList.innerHTML = '<li>Aucun réalisateur à classer pour le moment.</li>';
+        return;
+      }
+
+      rankedDirectors.forEach(director => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${director.name}</span> <span>⭐ ${director.averageScore.toFixed(2)}</span>`;
+        directorRankingList.appendChild(li);
       });
     }
 
@@ -271,7 +385,6 @@
 
         const avgNote = moyenne(film).toFixed(2);
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
-
 
         div.innerHTML = `
           <div class="film-header">
@@ -311,6 +424,7 @@
             localStorage.setItem('cinebook_films', JSON.stringify(films));
             chargerFilms();
             updateDirectorDatalist(); // Mettre à jour la datalist après suppression
+            displayDirectorRanking(); // Mettre à jour le classement des réalisateurs
           }
         });
 
@@ -349,27 +463,7 @@
         filmList.appendChild(div);
       });
       updateDirectorDatalist(); // Toujours mettre à jour la datalist après avoir chargé/affiché les films
-    }
-
-    function moyenne(film) {
-      let totalNotes = 0;
-      let compteurNotes = 0;
-
-      const notes = ['global', 'scenario', 'musique', 'visuel', 'acteur'];
-
-      notes.forEach(noteType => {
-        const value = Number(film[noteType]);
-        // Vérifie si la valeur est un nombre, n'est pas vide et est dans la plage 0-10
-        if (!isNaN(value) && film[noteType] !== '' && value >= 0 && value <= 10) {
-          totalNotes += value;
-          compteurNotes++;
-        }
-      });
-      
-      // Si aucune note n'est renseignée, retourne 0 pour éviter la division par zéro.
-      // Si seule la note globale est renseignée, compteurNotes sera 1, et totalNotes sera la note globale,
-      // ce qui donnera bien la note globale comme moyenne.
-      return compteurNotes > 0 ? totalNotes / compteurNotes : 0;
+      displayDirectorRanking(); // Mettre à jour le classement des réalisateurs après chargement des films
     }
 
     function formatDate(dateStr) {
@@ -423,9 +517,17 @@
 
     triSelect.addEventListener('change', chargerFilms);
 
+    // Ajout de l'écouteur d'événement pour le clic sur le titre principal
+    mainTitle.addEventListener('click', () => {
+      document.getElementById('directorRanking').scrollIntoView({
+        behavior: 'smooth'
+      });
+    });
+
     window.addEventListener('load', () => {
         chargerFilms();
         updateDirectorDatalist(); // Charger la datalist au chargement initial
+        displayDirectorRanking(); // Afficher le classement des réalisateurs au chargement initial
     });
   </script>
 </body>
