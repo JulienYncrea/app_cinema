@@ -359,12 +359,16 @@
 
       notes.forEach(noteType => {
         const value = Number(film[noteType]);
-        if (!isNaN(value) && value >= 0 && value <= 10) {
+        // Vérifie si la valeur est un nombre, n'est pas vide et est dans la plage 0-10
+        if (!isNaN(value) && film[noteType] !== '' && value >= 0 && value <= 10) {
           totalNotes += value;
           compteurNotes++;
         }
       });
-
+      
+      // Si aucune note n'est renseignée, retourne 0 pour éviter la division par zéro.
+      // Si seule la note globale est renseignée, compteurNotes sera 1, et totalNotes sera la note globale,
+      // ce qui donnera bien la note globale comme moyenne.
       return compteurNotes > 0 ? totalNotes / compteurNotes : 0;
     }
 
