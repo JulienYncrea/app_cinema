@@ -344,9 +344,18 @@
       });
     }
 
+    // MODIFICATION ICI: Adapter la note globale pour le système 1-5 étoiles, en gérant les anciennes notes > 5
     function moyenne(film) {
       const value = Number(film.global);
-      return (!isNaN(value) && value >= 1 && value <= 5) ? value : 0;
+      if (isNaN(value) || value < 1) {
+        return 0; // Note non valide ou inférieure à 1, retour 0
+      } else if (value > 5) {
+        // Si la note est supérieure à 5 (potentiellement une ancienne note sur 10),
+        // on la ramène à 5. Si vous voulez une conversion /2 (ex: 8/10 -> 4/5), utilisez Math.min(value / 2, 5);
+        return 5; // Capper à 5 étoiles
+      } else {
+        return value; // La note est déjà entre 1 et 5
+      }
     }
 
     function displayStars(rating) {
@@ -401,7 +410,7 @@
 
       rankedDirectors.forEach(director => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} - ${director.filmCount} film(s)</span>`;
+        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} (${director.averageScore.toFixed(1)}/5) - ${director.filmCount} film(s)</span>`;
         directorRankingList.appendChild(li);
       });
     }
@@ -482,7 +491,14 @@
                 form.title.value = filmToEdit.title;
                 form.director.value = filmToEdit.director || '';
                 form.date.value = filmToEdit.date;
-                setStarRating(filmToEdit.global);
+                // MODIFICATION ICI: Convertir ou "capper" l'ancienne note si elle est supérieure à 5 pour le formulaire d'édition
+                let displayRating = Number(filmToEdit.global);
+                if (isNaN(displayRating) || displayRating < 1) {
+                    displayRating = 0; // Ou une autre valeur par défaut si préférée
+                } else if (displayRating > 5) {
+                    displayRating = 5; // Capper à 5
+                }
+                setStarRating(displayRating); // Utiliser la note ajustée
                 form.commentaire.value = filmToEdit.commentaire;
 
                 addUpdateBtn.textContent = 'Modifier ✏️';
