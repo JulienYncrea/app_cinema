@@ -262,7 +262,7 @@
   </form>
 
   <div class="controls">
-    <label for="tri">Trier par :</label>
+    <label for="tri">Trier les films par :</label>
     <select id="tri">
       <option value="dateDesc" selected>Date (du plus récent)</option>
       <option value="dateAsc">Date (du plus ancien)</option>
@@ -277,38 +277,43 @@
 
   <div class="director-ranking-container" id="directorRanking">
     <h2>🏆 Classement des Réalisateurs</h2>
+    <div class="controls">
+        <label for="triDirector">Trier par :</label>
+        <select id="triDirector">
+            <option value="avgDesc" selected>Moyenne d'étoiles (décroissante)</option>
+            <option value="avgAsc">Moyenne d'étoiles (croissante)</option>
+            <option value="filmCountDesc">Nombre de films (décroissant)</option>
+            <option value="filmCountAsc">Nombre de films (croissant)</option>
+        </select>
+    </div>
     <ul class="director-ranking-list" id="directorRankingList">
-      </ul>
+    </ul>
   </div>
 
   <script>
     const form = document.getElementById('filmForm');
     const filmList = document.getElementById('filmList');
-    const triSelect = document.getElementById('tri');
+    const triSelect = document.getElementById('tri'); // Pour le tri des films
+    const triDirectorSelect = document.getElementById('triDirector'); // Pour le tri des réalisateurs
     const addUpdateBtn = document.getElementById('addUpdateBtn');
     const directorList = document.getElementById('directorList');
     const directorRankingList = document.getElementById('directorRankingList');
     const mainTitle = document.getElementById('mainTitle');
-    const globalRatingInput = document.getElementById('global'); // Champ caché pour la note
-    const starRatingContainer = document.getElementById('starRatingInput'); // Conteneur des étoiles
+    const globalRatingInput = document.getElementById('global');
+    const starRatingContainer = document.getElementById('starRatingInput');
 
-    // Utilisation d'un ID unique pour chaque film afin de le retrouver facilement
-    // Ceci résout le problème de modification après tri.
-    let filmsData = []; // Stocke les films et leur ID unique
+    let filmsData = [];
 
-    // Fonction pour générer un ID unique simple (peut être amélioré pour une robustesse accrue)
     function generateUniqueId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
     }
 
-    // Gestion du sélecteur d'étoiles
     starRatingContainer.addEventListener('change', (e) => {
       if (e.target.name === 'rating') {
         globalRatingInput.value = e.target.value;
       }
     });
 
-    // Fonction pour définir la valeur des étoiles dans le formulaire
     function setStarRating(value) {
       const starId = `star${value}`;
       const starRadio = document.getElementById(starId);
@@ -318,7 +323,6 @@
       globalRatingInput.value = value;
     }
 
-    // Fonction pour récupérer les réalisateurs uniques
     function getUniqueDirectors(films) {
       const directors = new Set();
       films.forEach(film => {
@@ -329,7 +333,6 @@
       return Array.from(directors).sort();
     }
 
-    // Fonction pour mettre à jour la datalist des réalisateurs
     function updateDirectorDatalist() {
       const uniqueDirectors = getUniqueDirectors(filmsData);
       directorList.innerHTML = '';
@@ -341,21 +344,18 @@
       });
     }
 
-    // Fonction pour calculer la moyenne d'un film (basée uniquement sur la note globale)
     function moyenne(film) {
       const value = Number(film.global);
-      return (!isNaN(value) && value >= 1 && value <= 5) ? value : 0; // Note sur 5 étoiles
+      return (!isNaN(value) && value >= 1 && value <= 5) ? value : 0;
     }
 
-    // Fonction pour afficher les étoiles
     function displayStars(rating) {
-      const numStars = Math.round(rating); // Arrondir à l'étoile entière la plus proche
+      const numStars = Math.round(rating);
       return '⭐'.repeat(numStars);
     }
 
-    // Fonction pour calculer et afficher le classement des réalisateurs
     function displayDirectorRanking() {
-      const directorScores = {}; // { 'Réalisateur': { totalScore: X, filmCount: Y } }
+      const directorScores = {};
 
       filmsData.forEach(film => {
         if (film.director && film.director.trim() !== '') {
@@ -370,12 +370,27 @@
         }
       });
 
-      const rankedDirectors = Object.keys(directorScores)
+      let rankedDirectors = Object.keys(directorScores)
         .map(director => ({
           name: director,
-          averageScore: directorScores[director].totalScore / directorScores[director].filmCount
-        }))
-        .sort((a, b) => b.averageScore - a.averageScore);
+          averageScore: directorScores[director].totalScore / directorScores[director].filmCount,
+          filmCount: directorScores[director].filmCount
+        }));
+
+      // Nouveau tri pour les réalisateurs
+      const triDirector = triDirectorSelect.value;
+      rankedDirectors.sort((a, b) => {
+        if (triDirector === 'avgDesc') {
+          return b.averageScore - a.averageScore;
+        } else if (triDirector === 'avgAsc') {
+          return a.averageScore - b.averageScore;
+        } else if (triDirector === 'filmCountDesc') {
+          return b.filmCount - a.filmCount;
+        } else if (triDirector === 'filmCountAsc') {
+          return a.filmCount - b.filmCount;
+        }
+        return 0; // Aucun tri par défaut
+      });
 
       directorRankingList.innerHTML = '';
 
@@ -386,12 +401,11 @@
 
       rankedDirectors.forEach(director => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} (${director.averageScore.toFixed(1)}/5)</span>`;
+        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} (${director.averageScore.toFixed(1)}/5) - ${director.filmCount} film(s)</span>`;
         directorRankingList.appendChild(li);
       });
     }
 
-    // Charge films et trie selon la sélection
     function chargerFilms() {
       filmsData = JSON.parse(localStorage.getItem('cinebook_films')) || [];
 
@@ -414,10 +428,10 @@
 
       filmList.innerHTML = '';
 
-      filmsData.forEach((film) => { // Plus besoin d'index direct ici
+      filmsData.forEach((film) => {
         const div = document.createElement('div');
         div.className = 'film';
-        div.dataset.id = film.id; // Stocker l'ID unique
+        div.dataset.id = film.id;
 
         const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
@@ -468,11 +482,10 @@
                 form.title.value = filmToEdit.title;
                 form.director.value = filmToEdit.director || '';
                 form.date.value = filmToEdit.date;
-                setStarRating(filmToEdit.global); // Remplir le sélecteur d'étoiles
+                setStarRating(filmToEdit.global);
                 form.commentaire.value = filmToEdit.commentaire;
 
                 addUpdateBtn.textContent = 'Modifier ✏️';
-                // Stocker l'ID du film en cours de modification au lieu de l'index
                 form.dataset.editingId = filmIdToEdit;
 
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -515,34 +528,33 @@
         title: form.title.value.trim(),
         director: form.director.value.trim(),
         date: form.date.value,
-        global: globalRatingInput.value, // Utiliser la valeur du champ caché
+        global: globalRatingInput.value,
         commentaire: form.commentaire.value.trim()
       };
 
-      const editingId = form.dataset.editingId; // Récupérer l'ID du film en modification
+      const editingId = form.dataset.editingId;
 
       if (editingId) {
-        // Mode modification
         const filmIndex = filmsData.findIndex(f => f.id === editingId);
         if (filmIndex !== -1) {
-            filmsData[filmIndex] = { ...filmsData[filmIndex], ...film }; // Mettre à jour l'objet existant
+            filmsData[filmIndex] = { ...filmsData[filmIndex], ...film };
         }
-        delete form.dataset.editingId; // Supprimer l'ID de modification
+        delete form.dataset.editingId;
         addUpdateBtn.textContent = 'Ajouter 🎥';
       } else {
-        // Mode ajout
-        film.id = generateUniqueId(); // Attribuer un ID unique au nouveau film
+        film.id = generateUniqueId();
         filmsData.push(film);
       }
 
       localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
 
       form.reset();
-      setStarRating(0); // Réinitialiser les étoiles après soumission
+      setStarRating(0);
       chargerFilms();
     });
 
     triSelect.addEventListener('change', chargerFilms);
+    triDirectorSelect.addEventListener('change', displayDirectorRanking); // Écouteur pour le tri des réalisateurs
 
     mainTitle.addEventListener('click', () => {
       document.getElementById('directorRanking').scrollIntoView({
@@ -554,7 +566,7 @@
         chargerFilms();
         updateDirectorDatalist();
         displayDirectorRanking();
-        setStarRating(0); // Initialiser les étoiles à vide au chargement
+        setStarRating(0);
     });
   </script>
 </body>
