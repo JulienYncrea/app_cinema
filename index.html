@@ -3,75 +3,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CineBook 🎬</title>
+  <title>CineBook 🌸</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon.png" />
-  <meta name="theme-color" content="#111827" />
-  <style>
+  <meta name="theme-color" content="#FFC0CB" /> <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 1rem;
-      background: #1f2937;
-      color: #f9fafb;
+      font-family: 'Arial', sans-serif; /* Police claire */
+      margin: 0; padding: 1.5rem; /* Un peu plus d'espace */
+      background: #F8F0F7; /* Rose très pâle, presque blanc */
+      color: #333333; /* Texte sombre pour un bon contraste */
     }
     h1, h2 {
       text-align: center;
-      color: #fbbf24;
+      color: #D81B60; /* Rose vif */
+      font-weight: bold;
+      margin-bottom: 1.5rem;
     }
     /* Style pour le titre principal et le logo cliquable */
     #mainTitle {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.5rem; /* Espace entre le texte et le logo */
-      color: #fbbf24;
-      cursor: pointer; /* Indique que le titre est cliquable */
+      gap: 0.75rem; /* Plus d'espace entre le texte et le logo */
+      color: #D81B60;
+      cursor: pointer;
+      font-size: 2.2rem; /* Plus grand pour le titre */
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Légère ombre pour le relief */
     }
     #mainTitle .logo {
-        margin-left: 0.5rem; /* Espace le logo du texte */
-        font-size: 1.2em; /* Taille du logo (emoji) */
+        margin-left: 0.75rem;
+        font-size: 1.5em; /* Taille du logo (emoji) */
     }
 
     form, .film-list, .controls, .director-ranking-container {
       max-width: 600px;
-      margin: 1rem auto;
-      background: #374151;
-      padding: 1rem;
-      border-radius: 0.5rem;
+      margin: 1.5rem auto; /* Plus d'espace autour des blocs */
+      background: #FFFFFF; /* Fond blanc pur pour les blocs principaux */
+      padding: 1.5rem;
+      border-radius: 1rem; /* Bords plus arrondis */
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08); /* Ombre douce */
     }
     label {
       display: block;
-      margin-top: 0.5rem;
+      margin-top: 1rem; /* Plus d'espace au-dessus des labels */
+      font-weight: bold;
+      color: #6A1B9A; /* Violet doux pour les labels */
     }
     input, select, textarea, button {
       width: 100%;
-      padding: 0.5rem;
-      margin-top: 0.2rem;
-      border: none;
-      border-radius: 0.25rem;
+      padding: 0.75rem; /* Plus de padding */
+      margin-top: 0.4rem;
+      border: 1px solid #E0BBE4; /* Bordure douce */
+      border-radius: 0.5rem; /* Bords arrondis */
       box-sizing: border-box;
+      background-color: #F8F8F8; /* Fond légèrement grisé pour les inputs */
+      color: #333333;
     }
+    input:focus, select:focus, textarea:focus {
+        border-color: #FF8AD8; /* Bordure rose au focus */
+        outline: none;
+        box-shadow: 0 0 5px rgba(255, 138, 216, 0.5); /* Ombre légère au focus */
+    }
+
     button {
-      margin-top: 1rem;
-      background: #fbbf24;
-      color: #1f2937;
+      margin-top: 1.5rem;
+      background: #FF69B4; /* Rose bonbon */
+      color: #FFFFFF;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      font-size: 1.1rem; /* Texte du bouton un peu plus grand */
+      border: none; /* Pas de bordure sur les boutons */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
     button:hover {
-      background: #d19e1a;
+      background: #E55B9F; /* Rose plus foncé au survol */
+      transform: translateY(-2px); /* Léger effet de soulèvement */
     }
     .film {
-      background: #111827;
-      padding: 0.5rem 1rem;
-      margin-top: 0.5rem;
-      border-radius: 0.5rem;
+      background: #FFF0F5; /* Rose pâle pour les films */
+      padding: 0.75rem 1.25rem; /* Plus de padding */
+      margin-top: 0.8rem; /* Plus d'espace entre les films */
+      border-radius: 0.8rem; /* Bords plus arrondis */
       cursor: pointer;
       user-select: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Ombre très légère */
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
     .film:hover {
-      background: #2563eb;
+      background: #FFC0CB; /* Rose plus marqué au survol */
+      transform: translateY(-2px);
     }
     .film-header {
       display: flex;
@@ -81,129 +102,154 @@
     }
     .film-title {
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1.2rem; /* Titre du film plus grand */
       flex-grow: 1;
+      color: #6A1B9A; /* Violet pour les titres de films */
     }
     .film-director {
-      font-size: 0.9rem;
-      color: #d1d5db;
+      font-size: 0.95rem;
+      color: #888888; /* Gris doux */
       margin-top: 0.2rem;
     }
     .film-date, .film-average {
-      font-size: 0.9rem;
-      color: #d1d5db;
+      font-size: 0.95rem;
+      color: #888888;
       white-space: nowrap;
       margin-left: 0.8rem;
     }
     .film-details {
-      margin-top: 0.5rem;
-      background: #2563eb;
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      color: #f3f4f6;
+      margin-top: 0.8rem;
+      background: #FFDDEE; /* Rose léger pour les détails ouverts */
+      padding: 0.8rem;
+      border-radius: 0.8rem;
+      color: #333333;
       display: none;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      border: 1px solid #F3CCE5; /* Bordure douce */
     }
     .film-details p {
-      margin: 0.2rem 0;
+      margin: 0.3rem 0;
     }
     textarea {
       resize: vertical;
-      min-height: 60px;
+      min-height: 80px; /* Hauteur min un peu plus grande */
     }
     .controls {
       display: flex;
       justify-content: flex-end;
-      gap: 1rem;
-      background: #374151;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
+      gap: 1.25rem; /* Plus d'espace entre les contrôles */
+      background: #FDFDFD; /* Fond clair pour les contrôles */
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.8rem;
       margin-bottom: 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     select {
-      max-width: 180px;
+      max-width: 200px; /* Un peu plus large si besoin */
     }
     /* Boutons suppression et modification dans détails */
     .btn-action {
-      background: #ef4444;
+      background: #DC143C; /* Cramoisi pour supprimer */
       border: none;
       color: white;
-      font-size: 1rem;
+      font-size: 0.95rem;
       cursor: pointer;
-      padding: 0.3rem 0.6rem;
-      border-radius: 0.3rem;
-      margin-top: 0.5rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.4rem;
+      margin-top: 0.8rem;
       user-select: none;
       transition: background-color 0.3s ease;
-      margin-right: 0.5rem; /* Ajout pour espacement */
+      margin-right: 0.6rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     .btn-action:hover {
-      background: #b91c1c;
+      background: #B20D2C;
     }
     .btn-edit {
-        background: #3b82f6; /* Bleu pour modifier */
+        background: #9C27B0; /* Violet plus foncé pour modifier */
     }
     .btn-edit:hover {
-      background: #1d4ed8;
+      background: #7B1FA2;
     }
 
     /* Styles pour le classement des réalisateurs */
     .director-ranking-container {
-      margin-top: 2rem;
-      background: #374151;
-      padding: 1rem;
-      border-radius: 0.5rem;
+      margin-top: 2.5rem;
+      background: #FFFFFF;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     }
     .director-ranking-container h2 {
       margin-top: 0;
-      margin-bottom: 1rem;
-      color: #fbbf24;
+      margin-bottom: 1.25rem;
+      color: #D81B60;
     }
     .director-ranking-list {
       list-style: none;
       padding: 0;
     }
     .director-ranking-list li {
-      background: #111827;
-      padding: 0.7rem 1rem;
-      margin-bottom: 0.5rem;
-      border-radius: 0.4rem;
+      background: #FFF0F5; /* Rose pâle */
+      padding: 0.8rem 1.2rem;
+      margin-bottom: 0.6rem;
+      border-radius: 0.6rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     }
     .director-ranking-list li span:first-child {
       font-weight: bold;
+      color: #6A1B9A;
     }
     .director-ranking-list li span:last-child {
-      color: #fbbf24;
+      color: #D81B60;
       font-weight: bold;
+      font-size: 1rem;
     }
 
     /* Styles pour le sélecteur d'étoiles */
     .star-rating {
       display: inline-block;
-      direction: rtl; /* Pour aligner les étoiles à droite, les clics fonctionnent de gauche à droite */
+      direction: rtl;
+      unicode-bidi: bidi-override; /* Permet le RTL */
+      margin-top: 0.5rem;
     }
     .star-rating input[type="radio"] {
       display: none;
     }
     .star-rating label {
-      font-size: 1.5rem;
-      color: #6b7280;
+      font-size: 1.8rem; /* Étoiles plus grandes */
+      color: #CCCCCC; /* Gris clair pour les étoiles non sélectionnées */
       cursor: pointer;
       display: inline-block;
-      padding: 0 2px;
+      padding: 0 3px; /* Plus d'espace entre les étoiles */
+      transition: color 0.2s ease;
     }
     .star-rating input[type="radio"]:checked ~ label {
-      color: #fbbf24; /* Couleur de l'étoile sélectionnée et celles avant */
+      color: #FFD700; /* Or pour les étoiles sélectionnées */
     }
     .star-rating label:hover,
     .star-rating label:hover ~ label {
-      color: #fcd34d; /* Couleur des étoiles au survol */
+      color: #FFEC8B; /* Jaune pâle au survol */
     }
 
     @media (max-width: 640px) {
+      body {
+        padding: 1rem;
+      }
+      form, .film-list, .controls, .director-ranking-container {
+        margin: 1rem auto;
+        padding: 1rem;
+        border-radius: 0.75rem;
+      }
+      h1 {
+        font-size: 1.8rem;
+      }
+      #mainTitle .logo {
+        font-size: 1.2em;
+      }
       .film-header {
         flex-direction: column;
         align-items: flex-start;
@@ -214,9 +260,21 @@
       .controls {
         flex-direction: column;
         align-items: flex-start;
+        gap: 0.8rem;
       }
       select {
         max-width: 100%;
+      }
+      button {
+        font-size: 1rem;
+        padding: 0.6rem;
+      }
+      .btn-action {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.9rem;
+      }
+      .star-rating label {
+        font-size: 1.5rem;
       }
     }
   </style>
@@ -231,7 +289,7 @@
   </script>
 </head>
 <body>
-  <h1 id="mainTitle">CineBook <span class="logo">🎬</span></h1>
+  <h1 id="mainTitle">CineBook <span class="logo">🌸</span></h1>
 
   <form id="filmForm" autocomplete="off">
     <label for="title">Titre du film *</label>
