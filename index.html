@@ -401,7 +401,7 @@
 
       rankedDirectors.forEach(director => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} (${director.averageScore.toFixed(1)}/5) - ${director.filmCount} film(s)</span>`;
+        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} - ${director.filmCount} film(s)</span>`;
         directorRankingList.appendChild(li);
       });
     }
