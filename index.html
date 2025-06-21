@@ -413,7 +413,23 @@
     }
 
     function chargerFilms() {
-      filmsData = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      const storedFilms = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      filmsData = []; // Réinitialiser filmsData pour la nouvelle construction
+      let changed = false; // Pour savoir si on doit sauvegarder
+
+      // On parcourt les films chargés et on leur assigne un ID si manquant
+      storedFilms.forEach(film => {
+          if (!film.id) {
+              film.id = generateUniqueId();
+              changed = true; // Il y a eu une modification
+          }
+          filmsData.push(film); // On ajoute le film (avec ou sans nouvel ID) à la liste active
+      });
+
+      // Si des IDs ont été ajoutés ou modifiés, on sauvegarde une seule fois à la fin
+      if (changed) {
+          localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
+      }
 
       const tri = triSelect.value;
       filmsData.sort((a, b) => {
@@ -437,7 +453,7 @@
       filmsData.forEach((film) => {
         const div = document.createElement('div');
         div.className = 'film';
-        div.dataset.id = film.id;
+        div.dataset.id = film.id; // L'ID est maintenant garanti d'être présent ici
 
         const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
@@ -488,7 +504,7 @@
                 form.title.value = filmToEdit.title;
                 form.director.value = filmToEdit.director || '';
                 form.date.value = filmToEdit.date;
-                // C'est cette partie qui corrige le bug pour l'édition :
+                // Correction de la note pour l'édition (cappage à 5)
                 let displayRating = Number(filmToEdit.global);
                 if (isNaN(displayRating) || displayRating < 1) {
                     displayRating = 0;
