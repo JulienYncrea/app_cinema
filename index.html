@@ -180,6 +180,29 @@
       font-weight: bold;
     }
 
+    /* Styles pour le sélecteur d'étoiles */
+    .star-rating {
+      display: inline-block;
+      direction: rtl; /* Pour aligner les étoiles à droite, les clics fonctionnent de gauche à droite */
+    }
+    .star-rating input[type="radio"] {
+      display: none;
+    }
+    .star-rating label {
+      font-size: 1.5rem;
+      color: #6b7280;
+      cursor: pointer;
+      display: inline-block;
+      padding: 0 2px;
+    }
+    .star-rating input[type="radio"]:checked ~ label {
+      color: #fbbf24; /* Couleur de l'étoile sélectionnée et celles avant */
+    }
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+      color: #fcd34d; /* Couleur des étoiles au survol */
+    }
+
     @media (max-width: 640px) {
       .film-header {
         flex-direction: column;
@@ -221,20 +244,16 @@
     <label for="date">Date de visionnage *</label>
     <input type="date" id="date" />
 
-    <label for="global">Note globale (0-10) *</label>
-    <input type="number" id="global" min="0" max="10" required />
+    <label for="global">Note globale *</label>
+    <div class="star-rating" id="starRatingInput">
+      <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 étoiles">★</label>
+      <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 étoiles">★</label>
+      <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 étoiles">★</label>
+      <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 étoiles">★</label>
+      <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 étoile">★</label>
+    </div>
+    <input type="hidden" id="global" required />
 
-    <label for="scenario">Scénario (0-10)</label>
-    <input type="number" id="scenario" min="0" max="10" />
-
-    <label for="musique">Musique (0-10)</label>
-    <input type="number" id="musique" min="0" max="10" />
-
-    <label for="visuel">Visuel (0-10)</label>
-    <input type="number" id="visuel" min="0" max="10" />
-
-    <label for="acteur">Acteurs (0-10)</label>
-    <input type="number" id="acteur" min="0" max="10" />
 
     <label for="commentaire">Commentaire</label>
     <textarea id="commentaire" placeholder="Votre avis sur le film..."></textarea>
@@ -268,10 +287,36 @@
     const triSelect = document.getElementById('tri');
     const addUpdateBtn = document.getElementById('addUpdateBtn');
     const directorList = document.getElementById('directorList');
-    const directorRankingList = document.getElementById('directorRankingList'); // Nouvel élément pour le classement
-    const mainTitle = document.getElementById('mainTitle'); // Titre principal cliquable
+    const directorRankingList = document.getElementById('directorRankingList');
+    const mainTitle = document.getElementById('mainTitle');
+    const globalRatingInput = document.getElementById('global'); // Champ caché pour la note
+    const starRatingContainer = document.getElementById('starRatingInput'); // Conteneur des étoiles
 
-    let editingIndex = -1; // Pour savoir si on est en mode modification ou ajout
+    // Utilisation d'un ID unique pour chaque film afin de le retrouver facilement
+    // Ceci résout le problème de modification après tri.
+    let filmsData = []; // Stocke les films et leur ID unique
+
+    // Fonction pour générer un ID unique simple (peut être amélioré pour une robustesse accrue)
+    function generateUniqueId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    }
+
+    // Gestion du sélecteur d'étoiles
+    starRatingContainer.addEventListener('change', (e) => {
+      if (e.target.name === 'rating') {
+        globalRatingInput.value = e.target.value;
+      }
+    });
+
+    // Fonction pour définir la valeur des étoiles dans le formulaire
+    function setStarRating(value) {
+      const starId = `star${value}`;
+      const starRadio = document.getElementById(starId);
+      if (starRadio) {
+        starRadio.checked = true;
+      }
+      globalRatingInput.value = value;
+    }
 
     // Fonction pour récupérer les réalisateurs uniques
     function getUniqueDirectors(films) {
@@ -286,9 +331,8 @@
 
     // Fonction pour mettre à jour la datalist des réalisateurs
     function updateDirectorDatalist() {
-      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
-      const uniqueDirectors = getUniqueDirectors(films);
-      directorList.innerHTML = ''; // Vide la liste existante
+      const uniqueDirectors = getUniqueDirectors(filmsData);
+      directorList.innerHTML = '';
 
       uniqueDirectors.forEach(director => {
         const option = document.createElement('option');
@@ -297,31 +341,23 @@
       });
     }
 
-    // Fonction pour calculer la moyenne d'un film
+    // Fonction pour calculer la moyenne d'un film (basée uniquement sur la note globale)
     function moyenne(film) {
-      let totalNotes = 0;
-      let compteurNotes = 0;
+      const value = Number(film.global);
+      return (!isNaN(value) && value >= 1 && value <= 5) ? value : 0; // Note sur 5 étoiles
+    }
 
-      const notes = ['global', 'scenario', 'musique', 'visuel', 'acteur'];
-
-      notes.forEach(noteType => {
-        const value = Number(film[noteType]);
-        // Vérifie si la valeur est un nombre, n'est pas vide et est dans la plage 0-10
-        if (!isNaN(value) && film[noteType] !== '' && value >= 0 && value <= 10) {
-          totalNotes += value;
-          compteurNotes++;
-        }
-      });
-      
-      return compteurNotes > 0 ? totalNotes / compteurNotes : 0;
+    // Fonction pour afficher les étoiles
+    function displayStars(rating) {
+      const numStars = Math.round(rating); // Arrondir à l'étoile entière la plus proche
+      return '⭐'.repeat(numStars);
     }
 
     // Fonction pour calculer et afficher le classement des réalisateurs
     function displayDirectorRanking() {
-      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
       const directorScores = {}; // { 'Réalisateur': { totalScore: X, filmCount: Y } }
 
-      films.forEach(film => {
+      filmsData.forEach(film => {
         if (film.director && film.director.trim() !== '') {
           const directorName = film.director.trim();
           const filmScore = moyenne(film);
@@ -339,9 +375,9 @@
           name: director,
           averageScore: directorScores[director].totalScore / directorScores[director].filmCount
         }))
-        .sort((a, b) => b.averageScore - a.averageScore); // Trier par moyenne décroissante
+        .sort((a, b) => b.averageScore - a.averageScore);
 
-      directorRankingList.innerHTML = ''; // Vider la liste existante
+      directorRankingList.innerHTML = '';
 
       if (rankedDirectors.length === 0) {
         directorRankingList.innerHTML = '<li>Aucun réalisateur à classer pour le moment.</li>';
@@ -350,18 +386,17 @@
 
       rankedDirectors.forEach(director => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${director.name}</span> <span>⭐ ${director.averageScore.toFixed(2)}</span>`;
+        li.innerHTML = `<span>${director.name}</span> <span>${displayStars(director.averageScore.toFixed(1))} (${director.averageScore.toFixed(1)}/5)</span>`;
         directorRankingList.appendChild(li);
       });
     }
 
     // Charge films et trie selon la sélection
     function chargerFilms() {
-      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      filmsData = JSON.parse(localStorage.getItem('cinebook_films')) || [];
 
-      // Trie selon la sélection
       const tri = triSelect.value;
-      films.sort((a, b) => {
+      filmsData.sort((a, b) => {
         if (tri === 'dateDesc') {
           return new Date(b.date || '0000-01-01') - new Date(a.date || '0000-01-01');
         } else if (tri === 'dateAsc') {
@@ -379,11 +414,12 @@
 
       filmList.innerHTML = '';
 
-      films.forEach((film, index) => {
+      filmsData.forEach((film) => { // Plus besoin d'index direct ici
         const div = document.createElement('div');
         div.className = 'film';
+        div.dataset.id = film.id; // Stocker l'ID unique
 
-        const avgNote = moyenne(film).toFixed(2);
+        const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
 
         div.innerHTML = `
@@ -393,20 +429,16 @@
               ${directorDisplay}
             </div>
             <div>
-              <span class="film-average">⭐ ${avgNote}</span>
+              <span class="film-average">${avgNoteStars}</span>
               <span class="film-date">${formatDate(film.date)}</span>
             </div>
           </div>
           <div class="film-details">
             <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
-            <p><strong>Note globale :</strong> ${film.global !== undefined && film.global !== '' ? film.global + '/10' : 'N/A'}</p>
-            <p><strong>Scénario :</strong> ${film.scenario !== undefined && film.scenario !== '' ? film.scenario + '/10' : 'N/A'}</p>
-            <p><strong>Musique :</strong> ${film.musique !== undefined && film.musique !== '' ? film.musique + '/10' : 'N/A'}</p>
-            <p><strong>Visuel :</strong> ${film.visuel !== undefined && film.visuel !== '' ? film.visuel + '/10' : 'N/A'}</p>
-            <p><strong>Acteurs :</strong> ${film.acteur !== undefined && film.acteur !== '' ? film.acteur + '/10' : 'N/A'}</p>
+            <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
             <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
-            <button class="btn-action btn-edit" data-index="${index}" title="Modifier ce film">✏️ Modifier</button>
-            <button class="btn-action btn-delete" data-index="${index}" title="Supprimer ce film">🗑️ Supprimer</button>
+            <button class="btn-action btn-edit" data-id="${film.id}" title="Modifier ce film">✏️ Modifier</button>
+            <button class="btn-action btn-delete" data-id="${film.id}" title="Supprimer ce film">🗑️ Supprimer</button>
           </div>
         `;
 
@@ -416,45 +448,40 @@
         const btnEdit = div.querySelector('.btn-edit');
 
         btnDelete.addEventListener('click', e => {
-          e.stopPropagation(); // empêcher toggle détails
-          const filmIndex = parseInt(e.target.dataset.index);
-          let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
-          if (confirm(`Supprimer "${films[filmIndex].title}" ?`)) {
-            films.splice(filmIndex, 1);
-            localStorage.setItem('cinebook_films', JSON.stringify(films));
+          e.stopPropagation();
+          const filmIdToDelete = e.target.dataset.id;
+          if (confirm(`Supprimer "${filmsData.find(f => f.id === filmIdToDelete)?.title}" ?`)) {
+            filmsData = filmsData.filter(f => f.id !== filmIdToDelete);
+            localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
             chargerFilms();
-            updateDirectorDatalist(); // Mettre à jour la datalist après suppression
-            displayDirectorRanking(); // Mettre à jour le classement des réalisateurs
+            updateDirectorDatalist();
+            displayDirectorRanking();
           }
         });
 
         btnEdit.addEventListener('click', e => {
             e.stopPropagation();
-            const filmIndex = parseInt(e.target.dataset.index);
-            const films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
-            const filmToEdit = films[filmIndex];
+            const filmIdToEdit = e.target.dataset.id;
+            const filmToEdit = filmsData.find(f => f.id === filmIdToEdit);
 
-            // Remplir le formulaire avec les données du film
-            form.title.value = filmToEdit.title;
-            form.director.value = filmToEdit.director || ''; // Nouveau champ
-            form.date.value = filmToEdit.date;
-            form.global.value = filmToEdit.global;
-            form.scenario.value = filmToEdit.scenario;
-            form.musique.value = filmToEdit.musique;
-            form.visuel.value = filmToEdit.visuel;
-            form.acteur.value = filmToEdit.acteur;
-            form.commentaire.value = filmToEdit.commentaire;
+            if (filmToEdit) {
+                form.title.value = filmToEdit.title;
+                form.director.value = filmToEdit.director || '';
+                form.date.value = filmToEdit.date;
+                setStarRating(filmToEdit.global); // Remplir le sélecteur d'étoiles
+                form.commentaire.value = filmToEdit.commentaire;
 
-            addUpdateBtn.textContent = 'Modifier ✏️';
-            editingIndex = filmIndex; // Stocker l'index du film en cours de modification
+                addUpdateBtn.textContent = 'Modifier ✏️';
+                // Stocker l'ID du film en cours de modification au lieu de l'index
+                form.dataset.editingId = filmIdToEdit;
 
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Remonter en haut de la page
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         });
 
         header.addEventListener('click', () => {
           const visible = details.style.display === 'block';
 
-          // Fermer tous les autres détails
           document.querySelectorAll('.film-details').forEach(d => d.style.display = 'none');
 
           details.style.display = visible ? 'none' : 'block';
@@ -462,14 +489,13 @@
 
         filmList.appendChild(div);
       });
-      updateDirectorDatalist(); // Toujours mettre à jour la datalist après avoir chargé/affiché les films
-      displayDirectorRanking(); // Mettre à jour le classement des réalisateurs après chargement des films
+      updateDirectorDatalist();
+      displayDirectorRanking();
     }
 
     function formatDate(dateStr) {
       if (!dateStr) return 'N/A';
       const d = new Date(dateStr);
-      // Pour éviter les décalages de fuseau horaire qui peuvent affecter la date affichée
       const userTimezoneOffset = d.getTimezoneOffset() * 60000;
       const adjustedDate = new Date(d.getTime() + userTimezoneOffset);
       return adjustedDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -478,46 +504,46 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
 
-      // Validation pour la note globale (obligatoire)
-      if (!form.global.value.trim() || isNaN(Number(form.global.value)) || Number(form.global.value) < 0 || Number(form.global.value) > 10) {
-        return alert('La note globale est obligatoire et doit être comprise entre 0 et 10.');
+      if (!form.title.value.trim()) {
+        return alert('Le titre est requis.');
       }
-      if (!form.title.value.trim()) return alert('Le titre est requis');
-
+      if (!globalRatingInput.value || Number(globalRatingInput.value) < 1 || Number(globalRatingInput.value) > 5) {
+        return alert('La note globale est obligatoire et doit être comprise entre 1 et 5 étoiles.');
+      }
 
       const film = {
         title: form.title.value.trim(),
-        director: form.director.value.trim(), // Ajout du réalisateur
+        director: form.director.value.trim(),
         date: form.date.value,
-        global: form.global.value,
-        scenario: form.scenario.value,
-        musique: form.musique.value,
-        visuel: form.visuel.value,
-        acteur: form.acteur.value,
+        global: globalRatingInput.value, // Utiliser la valeur du champ caché
         commentaire: form.commentaire.value.trim()
       };
 
-      let films = JSON.parse(localStorage.getItem('cinebook_films')) || [];
+      const editingId = form.dataset.editingId; // Récupérer l'ID du film en modification
 
-      if (editingIndex > -1) {
+      if (editingId) {
         // Mode modification
-        films[editingIndex] = film;
-        editingIndex = -1; // Réinitialiser le mode modification
+        const filmIndex = filmsData.findIndex(f => f.id === editingId);
+        if (filmIndex !== -1) {
+            filmsData[filmIndex] = { ...filmsData[filmIndex], ...film }; // Mettre à jour l'objet existant
+        }
+        delete form.dataset.editingId; // Supprimer l'ID de modification
         addUpdateBtn.textContent = 'Ajouter 🎥';
       } else {
         // Mode ajout
-        films.push(film);
+        film.id = generateUniqueId(); // Attribuer un ID unique au nouveau film
+        filmsData.push(film);
       }
 
-      localStorage.setItem('cinebook_films', JSON.stringify(films));
+      localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
 
       form.reset();
+      setStarRating(0); // Réinitialiser les étoiles après soumission
       chargerFilms();
     });
 
     triSelect.addEventListener('change', chargerFilms);
 
-    // Ajout de l'écouteur d'événement pour le clic sur le titre principal
     mainTitle.addEventListener('click', () => {
       document.getElementById('directorRanking').scrollIntoView({
         behavior: 'smooth'
@@ -526,8 +552,9 @@
 
     window.addEventListener('load', () => {
         chargerFilms();
-        updateDirectorDatalist(); // Charger la datalist au chargement initial
-        displayDirectorRanking(); // Afficher le classement des réalisateurs au chargement initial
+        updateDirectorDatalist();
+        displayDirectorRanking();
+        setStarRating(0); // Initialiser les étoiles à vide au chargement
     });
   </script>
 </body>
