@@ -279,76 +279,6 @@
     }
   </style>
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Service Worker enregistré:', reg.scope))
-          .catch(err => console.error('Erreur SW:', err));
-      });
-    }
-  </script>
-</head>
-<body>
-  <h1 id="mainTitle">CineBook <span class="logo">🌸</span></h1>
-
-  <form id="filmForm" autocomplete="off">
-    <label for="title">Titre du film *</label>
-    <input type="text" id="title" required />
-
-    <label for="director">Réalisateur</label>
-    <input type="text" id="director" list="directorList" placeholder="Ajouter un réalisateur ou en choisir un" />
-    <datalist id="directorList"></datalist>
-
-    <label for="date">Date de visionnage *</label>
-    <input type="date" id="date" />
-
-    <label for="global">Note globale *</label>
-    <div class="star-rating" id="starRatingInput">
-      <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 étoiles">★</label>
-      <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 étoiles">★</label>
-      <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 étoiles">★</label>
-      <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 étoiles">★</label>
-      <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 étoile">★</label>
-    </div>
-    <input type="hidden" id="global" required />
-
-
-    <label for="commentaire">Commentaire</label>
-    <textarea id="commentaire" placeholder="Votre avis sur le film..."></textarea>
-
-    <button type="submit" id="addUpdateBtn">Ajouter 🎥</button>
-  </form>
-
-  <div class="controls">
-    <label for="tri">Trier les films par :</label>
-    <select id="tri">
-      <option value="dateDesc" selected>Date (du plus récent)</option>
-      <option value="dateAsc">Date (du plus ancien)</option>
-      <option value="avgDesc">Note moyenne (la plus haute)</option>
-      <option value="avgAsc">Note moyenne (la plus basse)</option>
-      <option value="directorAsc">Réalisateur (A-Z)</option>
-    </select>
-  </div>
-
-  <h2>🎞️ Films vus</h2>
-  <div class="film-list" id="filmList"></div>
-
-  <div class="director-ranking-container" id="directorRanking">
-    <h2>🏆 Classement des Réalisateurs</h2>
-    <div class="controls">
-        <label for="triDirector">Trier par :</label>
-        <select id="triDirector">
-            <option value="avgDesc" selected>Moyenne d'étoiles (décroissante)</option>
-            <option value="avgAsc">Moyenne d'étoiles (croissante)</option>
-            <option value="filmCountDesc">Nombre de films (décroissant)</option>
-            <option value="filmCountAsc">Nombre de films (croissant)</option>
-        </select>
-    </div>
-    <ul class="director-ranking-list" id="directorRankingList">
-    </ul>
-  </div>
-
-  <script>
     const form = document.getElementById('filmForm');
     const filmList = document.getElementById('filmList');
     const triSelect = document.getElementById('tri'); // Pour le tri des films
@@ -402,17 +332,14 @@
       });
     }
 
-    // MODIFICATION ICI: Adapter la note globale pour le système 1-5 étoiles, en gérant les anciennes notes > 5
     function moyenne(film) {
       const value = Number(film.global);
       if (isNaN(value) || value < 1) {
-        return 0; // Note non valide ou inférieure à 1, retour 0
+        return 0;
       } else if (value > 5) {
-        // Si la note est supérieure à 5 (potentiellement une ancienne note sur 10),
-        // on la ramène à 5. Si vous voulez une conversion /2 (ex: 8/10 -> 4/5), utilisez Math.min(value / 2, 5);
-        return 5; // Capper à 5 étoiles
+        return 5;
       } else {
-        return value; // La note est déjà entre 1 et 5
+        return value;
       }
     }
 
@@ -444,7 +371,6 @@
           filmCount: directorScores[director].filmCount
         }));
 
-      // Nouveau tri pour les réalisateurs
       const triDirector = triDirectorSelect.value;
       rankedDirectors.sort((a, b) => {
         if (triDirector === 'avgDesc') {
@@ -456,7 +382,7 @@
         } else if (triDirector === 'filmCountAsc') {
           return a.filmCount - b.filmCount;
         }
-        return 0; // Aucun tri par défaut
+        return 0;
       });
 
       directorRankingList.innerHTML = '';
@@ -549,12 +475,12 @@
                 form.title.value = filmToEdit.title;
                 form.director.value = filmToEdit.director || '';
                 form.date.value = filmToEdit.date;
-                // MODIFICATION ICI: Convertir ou "capper" l'ancienne note si elle est supérieure à 5 pour le formulaire d'édition
+                // CORRECTION ICI: S'assurer que la note affichée pour l'édition est bien "cappée" à 5
                 let displayRating = Number(filmToEdit.global);
                 if (isNaN(displayRating) || displayRating < 1) {
-                    displayRating = 0; // Ou une autre valeur par défaut si préférée
+                    displayRating = 0;
                 } else if (displayRating > 5) {
-                    displayRating = 5; // Capper à 5
+                    displayRating = 5; // Capper à 5 pour le formulaire d'édition
                 }
                 setStarRating(displayRating); // Utiliser la note ajustée
                 form.commentaire.value = filmToEdit.commentaire;
@@ -628,7 +554,7 @@
     });
 
     triSelect.addEventListener('change', chargerFilms);
-    triDirectorSelect.addEventListener('change', displayDirectorRanking); // Écouteur pour le tri des réalisateurs
+    triDirectorSelect.addEventListener('change', displayDirectorRanking);
 
     mainTitle.addEventListener('click', () => {
       document.getElementById('directorRanking').scrollIntoView({
