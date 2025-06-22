@@ -78,6 +78,8 @@
       display: flex;
       align-items: flex-start; /* Aligner en haut pour le texte */
       gap: 1rem;
+      /* Ajout pour aligner la note à droite */
+      justify-content: space-between;
     }
     .film-poster {
         width: 60px; /* Taille de l'affiche dans la liste des films */
@@ -100,16 +102,20 @@
       color: #d1d5db;
       margin-top: 0.2rem;
     }
-    .film-meta {
-        display: flex; /* Note et date sur la même ligne */
-        align-items: center;
-        gap: 0.5rem;
-        margin-top: 0.5rem; /* Espace sous le réalisateur */
-    }
-    .film-date, .film-average {
+    /* Supprimons film-meta pour que la note puisse être seule */
+    .film-date {
       font-size: 0.9rem;
       color: #d1d5db;
       white-space: nowrap;
+      margin-top: 0.5rem; /* Pour espacer la date du réalisateur */
+    }
+    .film-average { /* Nouvelle classe pour la note séparée */
+        font-size: 0.9rem;
+        color: #fbbf24; /* Couleur de la note */
+        white-space: nowrap;
+        align-self: flex-start; /* Aligne la note en haut à droite */
+        margin-left: auto; /* Pousse la note tout à droite */
+        flex-shrink: 0; /* Empêche la note de rétrécir */
     }
     /* FIN MODIFICATION */
 
@@ -234,24 +240,25 @@
       .film-header {
         flex-direction: row; /* Garde l'image et le texte sur la même ligne */
         align-items: flex-start; /* Aligne le contenu en haut */
+        flex-wrap: wrap; /* Permet le retour à la ligne des éléments si besoin */
       }
       .film-info-main {
         flex-grow: 1;
+        /* Sur petit écran, le titre prend la place et la date/réal se met en dessous */
+        width: calc(100% - 70px); /* Pour laisser de la place à l'affiche */
       }
-      .film-meta {
-        /* Permet à la note et la date de passer à la ligne si pas assez de place */
-        flex-wrap: wrap; 
+      .film-date {
         margin-top: 0.2rem;
+        width: 100%; /* La date prend sa propre ligne */
       }
-      .film-date, .film-average {
-        margin-left: 0;
+      .film-average {
+        order: -1; /* Mettre la note en premier pour qu'elle puisse être à droite si l'espace est limité */
+        margin-left: auto;
+        width: 100%; /* Permet à la note de prendre sa propre ligne si nécessaire */
+        text-align: right;
       }
-      .controls {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      select {
-        max-width: 100%;
+      .film-poster {
+        margin-right: 1rem; /* Espace après l'affiche sur petit écran */
       }
     }
   </style>
@@ -523,12 +530,9 @@
             <div class="film-info-main">
               <div class="film-title">${film.title}</div>
               ${directorDisplay}
-              <div class="film-meta">
-                <span class="film-average">${avgNoteStars}</span>
-                <span class="film-date">${formatDate(film.date)}</span>
-              </div>
+              <span class="film-date">${formatDate(film.date)}</span>
             </div>
-          </div>
+            <span class="film-average">${avgNoteStars}</span> </div>
           <div class="film-details">
             <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
             <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
@@ -587,11 +591,6 @@
                     filmPosterPreview.src = '';
                 }
 
-                // Important : Si on est en mode édition, on ne veut pas que le champ titleSearch déclenche
-                // une recherche API automatique tant qu'on n'a pas tapé quelque chose de nouveau.
-                // On pré-remplit les informations comme si c'était une sélection API.
-                // Si l'utilisateur change le titre, l'événement 'change' ou 'input' sera déclenché.
-                
                 addUpdateBtn.textContent = 'Modifier ✏️';
                 form.dataset.editingId = filmIdToEdit;
 
@@ -636,7 +635,7 @@
         director: directorInput.value.trim(),
         date: dateInput.value,
         global: globalRatingInput.value,
-        synopsis: synopsisInput.value.trim(), // NOUVEAU: Ajout du synopsis
+        synopsis: synopsisInput.value.trim(),
         commentaire: commentaireInput.value.trim(),
         posterUrl: posterUrlInput.value || ''
       };
@@ -684,7 +683,7 @@
                 filmPosterPreview.style.display = 'none';
                 filmPosterPreview.src = '';
                 directorInput.value = '';
-                synopsisInput.value = ''; // Effacer le synopsis aussi
+                synopsisInput.value = '';
             }
             return;
         }
@@ -692,7 +691,7 @@
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(async () => {
             try {
-                const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=fr-FR`);
+                const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}` + '&language=fr-FR');
                 if (!response.ok) {
                     throw new Error(`Erreur HTTP: ${response.status}`);
                 }
@@ -712,14 +711,14 @@
             option.value = movie.title;
             option.dataset.id = movie.id; 
             option.dataset.posterPath = movie.poster_path;
-            option.dataset.overview = movie.overview || ''; // Stocker le synopsis
+            option.dataset.overview = movie.overview || '';
             filmSuggestionsDatalist.appendChild(option);
         });
     }
 
     async function getMovieDetails(movieId) {
         try {
-            const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=fr-FR`);
+            const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits` + '&language=fr-FR');
             if (!response.ok) {
                 throw new Error(`Erreur HTTP: ${response.status}`);
             }
@@ -732,20 +731,18 @@
     }
 
     titleSearchInput.addEventListener('input', (e) => {
-        // Effacer les champs auto-remplis si l'utilisateur commence à taper à nouveau,
-        // sauf si on est en mode édition et que le texte n'a pas changé.
         const currentEditingId = form.dataset.editingId;
         const filmBeingEdited = currentEditingId ? filmsData.find(f => f.id === currentEditingId) : null;
         
         if (filmBeingEdited && e.target.value === filmBeingEdited.title) {
-            // Si c'est le titre initial du film en édition, ne rien faire pour éviter d'effacer
+            // Do nothing if it's the original title of the film being edited
         } else {
-            titleInput.value = e.target.value; // Le champ caché suit le champ de recherche
+            titleInput.value = e.target.value;
             posterUrlInput.value = '';
             filmPosterPreview.style.display = 'none';
             filmPosterPreview.src = '';
             directorInput.value = '';
-            synopsisInput.value = ''; // Effacer le synopsis si l'utilisateur tape un nouveau titre
+            synopsisInput.value = '';
         }
 
         searchMovies(e.target.value);
@@ -772,7 +769,6 @@
                 filmPosterPreview.src = '';
             }
             
-            // Pré-remplir le synopsis depuis la suggestion (overview)
             synopsisInput.value = selectedOption.dataset.overview || '';
 
             if (movieId) {
@@ -791,14 +787,11 @@
                 }
             }
         } else {
-            // Si l'utilisateur n'a pas sélectionné une suggestion, mais a tapé quelque chose
-            // et que ce n'est pas une édition valide ou un retour au titre original.
-            // On ne vide pas `titleInput.value` car l'utilisateur a potentiellement mis un titre manuel.
             posterUrlInput.value = '';
             filmPosterPreview.style.display = 'none';
             filmPosterPreview.src = '';
             directorInput.value = '';
-            synopsisInput.value = ''; // Vider le synopsis si pas de sélection ou de correspondance
+            synopsisInput.value = '';
         }
     });
 
