@@ -556,8 +556,9 @@
                         <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
                         <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
                         <p><strong>Date de visionnage :</strong> ${formatDate(film.date)}</p>
-                        <p><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis disponible)'}</p>
                         <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
+                        <br>
+                        <p><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis disponible)'}</p>
                         <button class="btn-action btn-edit" data-id="${film.id}" title="Modifier ce film">✏️ Modifier</button>
                         <button class="btn-action btn-delete" data-id="${film.id}" title="Supprimer ce film">🗑️ Supprimer</button>
                     </div>
