@@ -284,49 +284,44 @@
       /* Affichage du Film (film-header) */
       .film-header {
         flex-direction: row; /* Garde l'affiche et les infos sur la même ligne */
-        flex-wrap: wrap; /* Permet le retour à la ligne si pas assez d'espace */
-        align-items: flex-start; /* Aligner en haut pour le texte */
+        flex-wrap: nowrap; /* EMPÊCHE le retour à la ligne pour les éléments principaux */
+        align-items: center; /* Aligner verticalement au centre pour les éléments principaux */
         justify-content: flex-start; /* Aligner tout à gauche */
       }
       .film-poster {
-        margin-right: 1rem; /* Espace après l'affiche */
+        margin-right: 0.75rem; /* Rapproche l'image et le titre */
         flex-shrink: 0; /* Empêche l'affiche de rétrécir */
       }
       .film-info-main {
+        display: flex; /* Le contenu interne (titre, réalisateur, date) reste empilé */
+        flex-direction: column;
         flex-grow: 1; /* Permet aux infos de prendre l'espace restant */
-        flex-basis: auto; /* Reviens à un comportement auto, moins restrictif */
-        min-width: 120px; /* Assure une largeur minimale pour les infos */
+        flex-basis: auto; /* Reviens à un comportement auto */
+        min-width: 0; /* Permet au contenu de rétrécir si nécessaire, sans débordement */
       }
-      .film-title,
+      .film-title {
+        font-size: 1rem; /* Ajuster la taille du titre si nécessaire */
+        white-space: nowrap; /* Empêche le titre de passer à la ligne */
+        overflow: hidden; /* Cache le texte qui dépasse */
+        text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est tronqué */
+      }
       .film-director,
       .film-date {
-        width: 100%; /* Chaque élément d'info prend toute la largeur disponible dans son conteneur */
-        margin-top: 0.2rem;
+        font-size: 0.85rem; /* Ajuster la taille des sous-titres */
+        margin-top: 0.1rem; /* Rapprocher les lignes de texte */
+        white-space: nowrap; /* Empêche le texte de passer à la ligne */
+        overflow: hidden; /* Cache le texte qui dépasse */
+        text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est tronqué */
       }
       .film-average {
-        order: 0; /* Reviens à l'ordre normal (après film-info-main si l'espace le permet) */
+        order: 0; /* Ordre normal */
         margin-left: auto; /* Pousse la note tout à droite */
-        align-self: flex-start; /* Aligne la note en haut de sa ligne */
+        align-self: center; /* Aligne la note verticalement au centre de la ligne */
         width: auto; /* La note reprend sa largeur naturelle */
         text-align: right; /* Aligner le texte à droite */
         flex-shrink: 0; /* Empêche la note de rétrécir */
         margin-top: 0; /* S'assurer qu'il n'y a pas de marge top indésirable */
-        position: relative; /* Pour s'assurer qu'il est bien pris en compte dans le flux */
-        top: 0; /* Réinitialiser toute position relative */
-      }
-
-      /* Fallback si l'espace est vraiment trop petit pour aligner titre/note */
-      .film-header:has(.film-info-main + .film-average) .film-average {
-          /* Si film-info-main et film-average sont sur la même ligne */
-          /* Cette règle s'applique si le navigateur supporte :has() */
-      }
-
-      /* Si film-average passe à la ligne, il doit prendre toute la largeur */
-      .film-header > .film-average {
-        /* Cela s'applique si .film-average est directement un enfant de .film-header */
-        /* et qu'il passe à la ligne suivante */
-        flex-basis: 100%; /* Prend toute la largeur disponible pour l'élément seul */
-        text-align: right;
+        padding-left: 0.5rem; /* Ajoute un petit espace entre le texte et les étoiles */
       }
     }
   </style>
