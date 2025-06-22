@@ -18,20 +18,21 @@
       text-align: center;
       color: #fbbf24;
     }
+    /* Style pour le titre principal et le logo cliquable */
     #mainTitle {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.5rem; /* Espace entre le texte et le logo */
       color: #fbbf24;
-      cursor: pointer;
+      cursor: pointer; /* Indique que le titre est cliquable */
     }
     #mainTitle .logo {
-        margin-left: 0.5rem;
-        font-size: 1.2em;
+        margin-left: 0.5rem; /* Espace le logo du texte */
+        font-size: 1.2em; /* Taille du logo (emoji) */
     }
 
-    form, .film-list, .director-ranking-container {
+    form, .film-list, .controls, .director-ranking-container {
       max-width: 600px;
       margin: 1rem auto;
       background: #374151;
@@ -74,40 +75,26 @@
     }
     .film-header {
       display: flex;
-      align-items: center; /* Aligner verticalement au centre */
-      justify-content: space-between; /* Répartir l'espace entre les éléments */
-      gap: 1rem; /* Espace entre les éléments */
-    }
-    /* L'affiche n'est plus dans le header, mais dans les détails */
-    .film-info-main {
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1; /* Permet aux infos de prendre l'espace restant */
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
     }
     .film-title {
       font-weight: bold;
       font-size: 1.1rem;
+      flex-grow: 1;
     }
     .film-director {
       font-size: 0.9rem;
       color: #d1d5db;
       margin-top: 0.2rem;
     }
-    .film-date {
+    .film-date, .film-average {
       font-size: 0.9rem;
       color: #d1d5db;
       white-space: nowrap;
-      margin-top: 0.5rem;
+      margin-left: 0.8rem;
     }
-    .film-average {
-        font-size: 0.9rem;
-        color: #fbbf24;
-        white-space: nowrap;
-        align-self: center; /* Aligne la note verticalement au centre de la ligne */
-        margin-left: auto; /* Pousse la note tout à droite */
-        flex-shrink: 0;
-    }
-
     .film-details {
       margin-top: 0.5rem;
       background: #2563eb;
@@ -120,50 +107,23 @@
     .film-details p {
       margin: 0.2rem 0;
     }
-    /* Style pour l'affiche quand elle est dans les détails */
-    .film-details .film-poster {
-        width: 90px; /* Taille un peu plus grande dans les détails */
-        height: 135px;
-        object-fit: cover;
-        border-radius: 3px;
-        float: left; /* Pour que le texte s'enroule autour */
-        margin-right: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    .film-details::after { /* Clearfix pour le float */
-        content: "";
-        display: table;
-        clear: both;
-    }
-
     textarea {
       resize: vertical;
       min-height: 60px;
     }
     .controls {
       display: flex;
-      flex-wrap: wrap;
       justify-content: flex-end;
-      align-items: center;
       gap: 1rem;
-      max-width: 600px;
-      margin: 1rem auto;
       background: #374151;
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
       margin-bottom: 0;
     }
-    .controls select {
+    select {
       max-width: 180px;
-      width: auto;
-      flex-shrink: 0;
     }
-    .controls label {
-        margin-top: 0;
-        display: inline-block;
-        flex-shrink: 0;
-    }
-
+    /* Boutons suppression et modification dans détails */
     .btn-action {
       background: #ef4444;
       border: none;
@@ -175,18 +135,19 @@
       margin-top: 0.5rem;
       user-select: none;
       transition: background-color 0.3s ease;
-      margin-right: 0.5rem;
+      margin-right: 0.5rem; /* Ajout pour espacement */
     }
     .btn-action:hover {
       background: #b91c1c;
     }
     .btn-edit {
-        background: #3b82f6;
+        background: #3b82f6; /* Bleu pour modifier */
     }
     .btn-edit:hover {
       background: #1d4ed8;
     }
 
+    /* Styles pour le classement des réalisateurs */
     .director-ranking-container {
       margin-top: 2rem;
       background: #374151;
@@ -219,9 +180,10 @@
       font-weight: bold;
     }
 
+    /* Styles pour le sélecteur d'étoiles */
     .star-rating {
       display: inline-block;
-      direction: rtl;
+      direction: rtl; /* Pour aligner les étoiles à droite, les clics fonctionnent de gauche à droite */
     }
     .star-rating input[type="radio"] {
       display: none;
@@ -234,101 +196,47 @@
       padding: 0 2px;
     }
     .star-rating input[type="radio"]:checked ~ label {
-      color: #fbbf24;
+      color: #fbbf24; /* Couleur de l'étoile sélectionnée et celles avant */
     }
     .star-rating label:hover,
     .star-rating label:hover ~ label {
-      color: #fcd34d;
+      color: #fcd34d; /* Couleur des étoiles au survol */
     }
 
+    /* Styles pour la prévisualisation de l'affiche */
     #filmPosterPreview {
-        max-width: 60px; /* L'image sera redimensionnée par CSS */
+        max-width: 60px; /* Taille petite */
         height: auto;
         margin-left: 10px;
         vertical-align: middle;
         border-radius: 5px;
     }
-    #globalSearch {
-        max-width: 180px; /* Même largeur max que le select pour PC */
-        padding: 0.75rem;
-        font-size: 1.1rem;
-        border-radius: 0.5rem;
-        border: 1px solid #4b5563;
-        background-color: #1f2937;
-        color: #f9fafb;
-        box-sizing: border-box;
-        margin-left: auto; /* Pousse le champ à droite dans le conteneur flex */
-        margin-top: 0;
+    .film-poster {
+        width: 40px; /* Taille de l'affiche dans la liste des films */
+        height: 60px;
+        object-fit: cover;
+        margin-right: 10px;
+        border-radius: 3px;
     }
-    #globalSearch::placeholder {
-        color: #9ca3af;
+    .film-header {
+        display: flex;
+        align-items: center; /* Centrer verticalement l'image et le texte */
     }
 
-    /* ************************************** */
-    /* MODIFICATIONS POUR MOBILE */
-    /* ************************************** */
     @media (max-width: 640px) {
-      /* Controls (Tri et Recherche Globale) */
-      .controls {
-        flex-direction: column; /* Empilement vertical */
-        align-items: flex-start; /* Alignement à gauche */
-        gap: 0.5rem; /* Réduire l'espacement */
-        padding: 1rem; /* Assurer un padding suffisant */
-      }
-      .controls label,
-      .controls select,
-      #globalSearch {
-        width: 100%; /* Prend toute la largeur disponible */
-        max-width: 100%; /* S'adapte à 100% */
-        margin-left: 0; /* Annule le margin-left: auto */
-        margin-top: 0; /* Annule toute marge top */
-        box-sizing: border-box; /* S'assurer que padding et border sont inclus */
-      }
-      /* Ajouter un espacement entre les éléments empilés des controls */
-      .controls label + select,
-      .controls select + #globalSearch,
-      .controls label + #globalSearch {
-          margin-top: 0.5rem !important; /* Ajoute un peu de marge entre les éléments empilés */
-      }
-
-      /* Affichage du Film (film-header) */
       .film-header {
-        flex-direction: row; /* Garde les infos sur la même ligne */
-        flex-wrap: nowrap; /* EMPÊCHE le retour à la ligne pour les éléments principaux */
-        align-items: center; /* Aligner verticalement au centre pour les éléments principaux */
-        justify-content: space-between; /* Répartir l'espace entre les infos et la note */
-      }
-      /* L'affiche n'est plus dans le header, donc pas de style ici */
-      .film-info-main {
-        display: flex; /* Le contenu interne (titre, réalisateur, date) reste empilé */
         flex-direction: column;
-        flex-grow: 1; /* Permet aux infos de prendre l'espace restant */
-        flex-basis: auto; /* Reviens à un comportement auto */
-        min-width: 0; /* Permet au contenu de rétrécir si nécessaire, sans débordement */
+        align-items: flex-start;
       }
-      .film-title {
-        font-size: 1rem; /* Ajuster la taille du titre si nécessaire */
-        white-space: nowrap; /* Empêche le titre de passer à la ligne */
-        overflow: hidden; /* Cache le texte qui dépasse */
-        text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est tronqué */
+      .film-date, .film-average {
+        margin-left: 0;
       }
-      .film-director,
-      .film-date {
-        font-size: 0.85rem; /* Ajuster la taille des sous-titres */
-        margin-top: 0.1rem; /* Rapprocher les lignes de texte */
-        white-space: nowrap; /* Empêche le texte de passer à la ligne */
-        overflow: hidden; /* Cache le texte qui dépasse */
-        text-overflow: ellipsis; /* Ajoute des points de suspension si le texte est tronqué */
+      .controls {
+        flex-direction: column;
+        align-items: flex-start;
       }
-      .film-average {
-        order: 0; /* Ordre normal */
-        margin-left: auto; /* Pousse la note tout à droite */
-        align-self: center; /* Aligne la note verticalement au centre de la ligne */
-        width: auto; /* La note reprend sa largeur naturelle */
-        text-align: right; /* Aligner le texte à droite */
-        flex-shrink: 0; /* Empêche la note de rétrécir */
-        margin-top: 0; /* S'assurer qu'il n'y a pas de marge top indésirable */
-        padding-left: 0.5rem; /* Ajoute un petit espace entre le texte et les étoiles */
+      select {
+        max-width: 100%;
       }
     }
   </style>
@@ -349,9 +257,7 @@
     <label for="titleSearch">Rechercher un film *</label>
     <input type="text" id="titleSearch" placeholder="Taper le titre du film..." list="filmSuggestions" />
     <datalist id="filmSuggestions"></datalist>
-    <input type="hidden" id="title" required />
-    <input type="hidden" id="posterUrl" />
-    <img id="filmPosterPreview" src="" alt="Affiche du film" style="display:none;" />
+    <input type="hidden" id="title" required /> <input type="hidden" id="posterUrl" /> <img id="filmPosterPreview" src="" alt="Affiche du film" style="display:none;" />
 
 
     <label for="director">Réalisateur</label>
@@ -372,9 +278,6 @@
     <input type="hidden" id="global" required />
 
 
-    <label for="synopsis">Synopsis</label>
-    <textarea id="synopsis" placeholder="Synopsis du film..."></textarea>
-
     <label for="commentaire">Commentaire</label>
     <textarea id="commentaire" placeholder="Votre avis sur le film..."></textarea>
 
@@ -390,7 +293,6 @@
       <option value="avgAsc">Note moyenne (la plus basse)</option>
       <option value="directorAsc">Réalisateur (A-Z)</option>
     </select>
-    <input type="text" id="globalSearch" placeholder="Rechercher par titre ou réalisateur..." />
   </div>
 
   <h2>🎞️ Films vus</h2>
@@ -414,8 +316,8 @@
   <script>
     const form = document.getElementById('filmForm');
     const filmList = document.getElementById('filmList');
-    const triSelect = document.getElementById('tri');
-    const triDirectorSelect = document.getElementById('triDirector');
+    const triSelect = document.getElementById('tri'); // Pour le tri des films
+    const triDirectorSelect = document.getElementById('triDirector'); // Pour le tri des réalisateurs
     const addUpdateBtn = document.getElementById('addUpdateBtn');
     const directorList = document.getElementById('directorList');
     const directorRankingList = document.getElementById('directorRankingList');
@@ -423,23 +325,22 @@
     const globalRatingInput = document.getElementById('global');
     const starRatingContainer = document.getElementById('starRatingInput');
 
+    // Nouveaux éléments pour la recherche de films
     const titleSearchInput = document.getElementById('titleSearch');
     const filmSuggestionsDatalist = document.getElementById('filmSuggestions');
-    const titleInput = document.getElementById('title');
-    const posterUrlInput = document.getElementById('posterUrl');
+    const titleInput = document.getElementById('title'); // Le champ caché pour le titre réel
+    const posterUrlInput = document.getElementById('posterUrl'); // Le champ caché pour l'URL de l'affiche
     const filmPosterPreview = document.getElementById('filmPosterPreview');
-    const directorInput = document.getElementById('director');
+    const directorInput = document.getElementById('director'); // Récupérer l'input du réalisateur
+    // NOUVEAU: Déclaration des variables dateInput et commentaireInput
     const dateInput = document.getElementById('date');
-    const synopsisInput = document.getElementById('synopsis');
     const commentaireInput = document.getElementById('commentaire');
-    
-    const globalSearchInput = document.getElementById('globalSearch');
 
-    const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11';
+
+    // REMPLACEZ 'VOTRE_CLE_API_TMDB' par votre clé API TheMovieDB
+    const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11'; // La clé correcte à utiliser
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-    // Utilisons une taille unique pour l'API image pour simplifier, c'est w185 pour les détails qui est la plus pertinente pour la sauvegarde.
-    // L'aperçu sera simplement redimensionné par CSS.
-    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w185'; 
+    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92'; // w92 pour une petite affiche
 
     let filmsData = [];
     let debounceTimer;
@@ -486,12 +387,13 @@
 
     function moyenne(film) {
       const value = Number(film.global);
+      // Gère les cas où la note est vide/non numérique (<1) ou >5 (ancienne note)
       if (isNaN(value) || value < 1) {
         return 0;
       } else if (value > 5) {
-        return 5;
+        return 5; // Capper à 5 si l'ancienne note était >5
       } else {
-        return value;
+        return value; // La note est déjà entre 1 et 5
       }
     }
 
@@ -506,7 +408,7 @@
       filmsData.forEach(film => {
         if (film.director && film.director.trim() !== '') {
           const directorName = film.director.trim();
-          const filmScore = moyenne(film);
+          const filmScore = moyenne(film); // Utilise la fonction moyenne qui gère les notes > 5
 
           if (!directorScores[directorName]) {
             directorScores[directorName] = { totalScore: 0, filmCount: 0 };
@@ -551,36 +453,27 @@
       });
     }
 
-    function chargerFilms(filterQuery = '') {
+    function chargerFilms() {
       const storedFilms = JSON.parse(localStorage.getItem('cinebook_films')) || [];
-      filmsData = [];
-      let changed = false;
+      filmsData = []; // Réinitialiser filmsData pour la nouvelle construction
+      let changed = false; // Pour savoir si on doit sauvegarder
 
+      // On parcourt les films chargés et on leur assigne un ID si manquant
       storedFilms.forEach(film => {
           if (!film.id) {
               film.id = generateUniqueId();
-              changed = true;
+              changed = true; // Il y a eu une modification
           }
-          filmsData.push(film);
+          filmsData.push(film); // On ajoute le film (avec ou sans nouvel ID) à la liste active
       });
 
+      // Si des IDs ont été ajoutés ou modifiés, on sauvegarde une seule fois à la fin
       if (changed) {
           localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
       }
 
       const tri = triSelect.value;
-      let filteredFilms = [...filmsData];
-
-      if (filterQuery.trim() !== '') {
-          const lowerCaseQuery = filterQuery.toLowerCase();
-          filteredFilms = filteredFilms.filter(film => {
-              const titleMatch = film.title && film.title.toLowerCase().includes(lowerCaseQuery);
-              const directorMatch = film.director && film.director.toLowerCase().includes(lowerCaseQuery);
-              return titleMatch || directorMatch;
-          });
-      }
-
-      filteredFilms.sort((a, b) => {
+      filmsData.sort((a, b) => {
         if (tri === 'dateDesc') {
           return new Date(b.date || '0000-01-01') - new Date(a.date || '0000-01-01');
         } else if (tri === 'dateAsc') {
@@ -598,38 +491,32 @@
 
       filmList.innerHTML = '';
 
-      if (filteredFilms.length === 0) {
-          filmList.innerHTML = '<p style="text-align: center; color: #9ca3af;">Aucun film trouvé avec cette recherche.</p>';
-      }
-
-      filteredFilms.forEach((film) => {
+      filmsData.forEach((film) => {
         const div = document.createElement('div');
         div.className = 'film';
-        div.dataset.id = film.id;
+        div.dataset.id = film.id; // L'ID est maintenant garanti d'être présent ici
 
         const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
-        
-        // L'affiche est maintenant dans les détails, on utilise directement l'URL stockée (qui sera en w185)
-        const posterHtmlInDetails = film.posterUrl 
-            ? `<img src="${film.posterUrl}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='90px'; this.style.height='135px'; this.title='Affiche non disponible';" />`
-            : `<div class="film-poster" style="background-color:#333; width:90px; height:135px; display:inline-block; vertical-align:top;" title="Affiche non disponible"></div>`;
-
+        const posterHtml = film.posterUrl 
+            ? `<img src="${film.posterUrl}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='40px'; this.style.height='60px'; this.title='Affiche non disponible';" />`
+            : `<div class="film-poster" style="background-color:#333; width:40px; height:60px; display:inline-block; vertical-align:middle;" title="Affiche non disponible"></div>`; // Affiche vide si pas d'URL
 
         div.innerHTML = `
           <div class="film-header">
-            <div class="film-info-main">
+            ${posterHtml}
+            <div>
               <div class="film-title">${film.title}</div>
               ${directorDisplay}
+            </div>
+            <div>
+              <span class="film-average">${avgNoteStars}</span>
               <span class="film-date">${formatDate(film.date)}</span>
             </div>
-            <span class="film-average">${avgNoteStars}</span>
           </div>
           <div class="film-details">
-            ${posterHtmlInDetails}
             <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
             <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
-            <p><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis)'}</p>
             <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
             <button class="btn-action btn-edit" data-id="${film.id}" title="Modifier ce film">✏️ Modifier</button>
             <button class="btn-action btn-delete" data-id="${film.id}" title="Supprimer ce film">🗑️ Supprimer</button>
@@ -647,40 +534,37 @@
           if (confirm(`Supprimer "${filmsData.find(f => f.id === filmIdToDelete)?.title}" ?`)) {
             filmsData = filmsData.filter(f => f.id !== filmIdToDelete);
             localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
-            chargerFilms(globalSearchInput.value);
+            chargerFilms();
             updateDirectorDatalist();
             displayDirectorRanking();
           }
         });
 
-        btnEdit.addEventListener('click', async (e) => {
+        btnEdit.addEventListener('click', e => {
             e.stopPropagation();
             const filmIdToEdit = e.target.dataset.id;
             const filmToEdit = filmsData.find(f => f.id === filmIdToEdit);
 
             if (filmToEdit) {
-                titleSearchInput.value = filmToEdit.title; 
-                titleInput.value = filmToEdit.title;
-                
-                directorInput.value = filmToEdit.director || '';
-                dateInput.value = filmToEdit.date;
+                titleSearchInput.value = filmToEdit.title; // Mettre le titre dans le champ de recherche
+                titleInput.value = filmToEdit.title; // Mettre à jour le champ caché
+                directorInput.value = filmToEdit.director || ''; // Pré-remplir le réalisateur
+                dateInput.value = filmToEdit.date; // Utilisez la variable déclarée
+                // Correction de la note pour l'édition (cappage à 5)
                 let displayRating = Number(filmToEdit.global);
                 if (isNaN(displayRating) || displayRating < 1) {
                     displayRating = 0;
                 } else if (displayRating > 5) {
-                    displayRating = 5;
+                    displayRating = 5; // Capper à 5 pour le formulaire d'édition
                 }
-                setStarRating(displayRating);
-                synopsisInput.value = filmToEdit.synopsis || '';
-                commentaireInput.value = filmToEdit.commentaire;
-                posterUrlInput.value = filmToEdit.posterUrl || ''; // L'URL stockée est déjà en w185
+                setStarRating(displayRating); // Utiliser la note ajustée
+                commentaireInput.value = filmToEdit.commentaire; // Utilisez la variable déclarée
+                posterUrlInput.value = filmToEdit.posterUrl || ''; // Charger l'URL de l'affiche
                 
-                // Utiliser l'URL stockée directement pour la prévisualisation dans le formulaire
                 if (filmToEdit.posterUrl) {
-                    filmPosterPreview.src = filmToEdit.posterUrl; // Utilise directement l'URL w185
+                    filmPosterPreview.src = filmToEdit.posterUrl;
                     filmPosterPreview.style.display = 'inline-block';
                 } else {
-                    posterUrlInput.value = '';
                     filmPosterPreview.style.display = 'none';
                     filmPosterPreview.src = '';
                 }
@@ -695,7 +579,6 @@
         header.addEventListener('click', () => {
           const visible = details.style.display === 'block';
 
-          // Fermer tous les autres détails avant d'ouvrir celui-ci
           document.querySelectorAll('.film-details').forEach(d => d.style.display = 'none');
 
           details.style.display = visible ? 'none' : 'block';
@@ -718,7 +601,7 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
 
-      if (!titleInput.value.trim()) {
+      if (!titleInput.value.trim()) { // Vérifier le champ caché pour le titre réel
         return alert('Le titre du film est requis.');
       }
       if (!globalRatingInput.value || Number(globalRatingInput.value) < 1 || Number(globalRatingInput.value) > 5) {
@@ -728,11 +611,10 @@
       const film = {
         title: titleInput.value.trim(),
         director: directorInput.value.trim(),
-        date: dateInput.value,
+        date: dateInput.value, // Utilisez la variable déclarée
         global: globalRatingInput.value,
-        synopsis: synopsisInput.value.trim(),
-        commentaire: commentaireInput.value.trim(),
-        posterUrl: posterUrlInput.value || '' // posterUrlInput.value contient déjà l'URL w185
+        commentaire: commentaireInput.value.trim(), // Utilisez la variable déclarée
+        posterUrl: posterUrlInput.value || '' // Enregistrer l'URL de l'affiche
       };
 
       const editingId = form.dataset.editingId;
@@ -753,12 +635,11 @@
 
       form.reset();
       setStarRating(0);
-      filmPosterPreview.style.display = 'none'; // Cacher la preview après soumission
-      filmPosterPreview.src = ''; // Réinitialiser la source
-      chargerFilms(globalSearchInput.value);
+      filmPosterPreview.style.display = 'none'; // Cacher l'aperçu de l'affiche après soumission
+      chargerFilms();
     });
 
-    triSelect.addEventListener('change', () => chargerFilms(globalSearchInput.value));
+    triSelect.addEventListener('change', chargerFilms);
     triDirectorSelect.addEventListener('change', displayDirectorRanking);
 
     mainTitle.addEventListener('click', () => {
@@ -767,26 +648,11 @@
       });
     });
 
-    globalSearchInput.addEventListener('input', (e) => {
-        chargerFilms(e.target.value);
-    });
+    // --- Fonctions pour la recherche de films via TMDb ---
 
     async function searchMovies(query) {
-        if (query.length < 3) {
+        if (query.length < 3) { // Ne rechercher que si au moins 3 caractères sont tapés
             filmSuggestionsDatalist.innerHTML = '';
-            // Si on efface le champ de recherche, on vide aussi les champs liés à l'API
-            // Ne pas vider si on est en mode édition et que le titre est celui du film édité
-            const currentEditingId = form.dataset.editingId;
-            const filmBeingEdited = currentEditingId ? filmsData.find(f => f.id === currentEditingId) : null;
-
-            if (!filmBeingEdited || e.target.value !== filmBeingEdited.title) { 
-                titleInput.value = '';
-                posterUrlInput.value = '';
-                filmPosterPreview.style.display = 'none';
-                filmPosterPreview.src = '';
-                directorInput.value = '';
-                synopsisInput.value = '';
-            }
             return;
         }
 
@@ -801,9 +667,9 @@
                 displayMovieSuggestions(data.results);
             } catch (error) {
                 console.error("Erreur lors de la recherche de films:", error);
-                filmSuggestionsDatalist.innerHTML = '';
+                filmSuggestionsDatalist.innerHTML = ''; // Vider les suggestions en cas d'erreur
             }
-        }, 300);
+        }, 300); // Délai de 300ms avant de lancer la recherche
     }
 
     function displayMovieSuggestions(movies) {
@@ -811,13 +677,14 @@
         movies.forEach(movie => {
             const option = document.createElement('option');
             option.value = movie.title;
+            // Stocker l'ID du film pour une requête de détails ultérieure
             option.dataset.id = movie.id; 
-            option.dataset.posterPath = movie.poster_path;
-            option.dataset.overview = movie.overview || '';
+            option.dataset.posterPath = movie.poster_path; 
             filmSuggestionsDatalist.appendChild(option);
         });
     }
 
+    // Nouvelle fonction pour obtenir les détails du film (y compris l'équipe)
     async function getMovieDetails(movieId) {
         try {
             const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=fr-FR`);
@@ -832,6 +699,10 @@
         }
     }
 
+    titleSearchInput.addEventListener('input', (e) => {
+        searchMovies(e.target.value);
+    });
+
     titleSearchInput.addEventListener('change', async (e) => {
         const selectedOption = Array.from(filmSuggestionsDatalist.options).find(
             option => option.value === e.target.value
@@ -839,25 +710,21 @@
 
         if (selectedOption) {
             const movieId = selectedOption.dataset.id;
-            titleInput.value = selectedOption.value;
+            titleInput.value = selectedOption.value; // Mettre à jour le champ caché avec le titre complet
             
             const posterPath = selectedOption.dataset.posterPath;
             if (posterPath) {
-                // Utilise la TMDB_IMAGE_BASE_URL (w185) pour la prévisualisation et le stockage
-                const fullPosterUrl = `${TMDB_IMAGE_BASE_URL}${posterPath}`; 
-
-                posterUrlInput.value = fullPosterUrl; // Stocke l'URL w185
-                filmPosterPreview.src = fullPosterUrl; // Affiche la preview w185
+                const fullPosterUrl = `${TMDB_IMAGE_BASE_URL}${posterPath}`;
+                posterUrlInput.value = fullPosterUrl; // Enregistrer l'URL complète
+                filmPosterPreview.src = fullPosterUrl;
                 filmPosterPreview.style.display = 'inline-block';
             } else {
-                // Si pas de poster_path, on réinitialise
-                posterUrlInput.value = '';
+                posterUrlInput.value = ''; // Pas d'affiche
                 filmPosterPreview.style.display = 'none';
                 filmPosterPreview.src = '';
             }
-            
-            synopsisInput.value = selectedOption.dataset.overview || '';
 
+            // Récupérer les détails du film pour le réalisateur
             if (movieId) {
                 const movieDetails = await getMovieDetails(movieId);
                 if (movieDetails && movieDetails.credits && movieDetails.credits.crew) {
@@ -865,28 +732,21 @@
                         (member) => member.job === 'Director'
                     );
                     if (director) {
-                        directorInput.value = director.name;
+                        directorInput.value = director.name; // Pré-remplir le champ réalisateur
                     } else {
-                        directorInput.value = '';
+                        directorInput.value = ''; // Effacer si aucun réalisateur trouvé
                     }
                 } else {
-                    directorInput.value = '';
+                    directorInput.value = ''; // Effacer si pas de crédits ou d'équipe
                 }
             }
         } else {
-            // Si le texte saisi ne correspond à aucune suggestion sélectionnée (ou est effacé)
-            // On réinitialise les champs liés à l'API, SAUF si on est en mode édition
-            const currentEditingId = form.dataset.editingId;
-            const filmBeingEdited = currentEditingId ? filmsData.find(f => f.id === currentEditingId) : null;
-            
-            if (!filmBeingEdited || e.target.value !== filmBeingEdited.title) {
-                posterUrlInput.value = '';
-                filmPosterPreview.style.display = 'none';
-                filmPosterPreview.src = '';
-                directorInput.value = '';
-                synopsisInput.value = '';
-                // titleInput.value est déjà mis à jour par l'événement 'input'
-            }
+            // Si l'utilisateur n'a pas sélectionné une suggestion, mais a tapé quelque chose
+            titleInput.value = e.target.value;
+            posterUrlInput.value = '';
+            filmPosterPreview.style.display = 'none';
+            filmPosterPreview.src = '';
+            directorInput.value = ''; // Effacer le réalisateur si pas de sélection valide
         }
     });
 
