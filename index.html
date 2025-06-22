@@ -32,7 +32,7 @@
         font-size: 1.2em; /* Taille du logo (emoji) */
     }
 
-    form, .film-list, .controls, .director-ranking-container {
+    form, .film-list, .director-ranking-container { /* Retiré .controls d'ici car il a un style spécifique maintenant */
       max-width: 600px;
       margin: 1rem auto;
       background: #374151;
@@ -131,18 +131,33 @@
       resize: vertical;
       min-height: 60px;
     }
+    /* MODIFICATION ICI pour le conteneur controls */
     .controls {
       display: flex;
-      justify-content: flex-end;
+      flex-wrap: wrap; /* Permet aux éléments de passer à la ligne sur petits écrans */
+      justify-content: flex-end; /* Aligner les éléments à droite */
+      align-items: center; /* Centrer verticalement les éléments */
       gap: 1rem;
+      max-width: 600px; /* Limite la largeur du conteneur */
+      margin: 1rem auto; /* Centre le conteneur */
       background: #374151;
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
       margin-bottom: 0;
     }
-    select {
-      max-width: 180px;
+    /* Style pour le sélecteur de tri */
+    .controls select {
+      max-width: 180px; /* Largeur max pour le select */
+      width: auto; /* Permet au select de s'adapter à son contenu mais pas de déborder */
+      flex-shrink: 0; /* Empêche le select de rétrécir */
     }
+    /* Style pour le label du tri */
+    .controls label {
+        margin-top: 0; /* Pas de marge en haut pour les labels dans les controls */
+        display: inline-block; /* Pour qu'il prenne moins de place */
+        flex-shrink: 0;
+    }
+
     /* Boutons suppression et modification dans détails */
     .btn-action {
       background: #ef4444;
@@ -231,17 +246,20 @@
         vertical-align: middle;
         border-radius: 5px;
     }
-    /* Styles pour le champ de recherche globale */
+    /* MODIFICATION : Styles pour le champ de recherche globale */
     #globalSearch {
-        margin-top: 1rem;
-        width: 100%;
+        /* On le retire des styles globaux pour input pour le placer dans .controls */
+        /* width: 100%; <-- RETIRE */
+        max-width: 180px; /* Même largeur max que le select */
         padding: 0.75rem;
         font-size: 1.1rem;
         border-radius: 0.5rem;
         border: 1px solid #4b5563;
         background-color: #1f2937;
         color: #f9fafb;
-        box-sizing: border-box; /* Pour inclure padding et border dans la largeur */
+        box-sizing: border-box;
+        margin-left: auto; /* Pousse le champ à droite dans le conteneur flex */
+        margin-top: 0; /* Pas de marge en haut dans le conteneur flex */
     }
     #globalSearch::placeholder {
         color: #9ca3af;
@@ -270,6 +288,19 @@
       }
       .film-poster {
         margin-right: 1rem;
+      }
+      /* MODIFICATION pour les controls sur mobile */
+      .controls {
+        flex-direction: column; /* Les éléments s'empilent */
+        align-items: flex-start; /* Aligner à gauche */
+      }
+      .controls label,
+      .controls select,
+      #globalSearch {
+        width: 100%; /* Prend toute la largeur disponible */
+        max-width: 100%; /* S'adapte à 100% */
+        margin-left: 0; /* Supprime le margin-left auto */
+        margin-top: 0.5rem; /* Ajoute un peu de marge entre les éléments empilés */
       }
     }
   </style>
@@ -331,9 +362,8 @@
       <option value="avgAsc">Note moyenne (la plus basse)</option>
       <option value="directorAsc">Réalisateur (A-Z)</option>
     </select>
+    <input type="text" id="globalSearch" placeholder="Rechercher par titre ou réalisateur..." />
   </div>
-
-  <input type="text" id="globalSearch" placeholder="Rechercher par titre ou réalisateur..." />
 
   <h2>🎞️ Films vus</h2>
   <div class="film-list" id="filmList"></div>
@@ -375,7 +405,7 @@
     const synopsisInput = document.getElementById('synopsis');
     const commentaireInput = document.getElementById('commentaire');
     
-    // NOUVEL ELEMENT : Champ de recherche globale
+    // Champ de recherche globale
     const globalSearchInput = document.getElementById('globalSearch');
 
     const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11';
@@ -492,7 +522,6 @@
       });
     }
 
-    // MODIFICATION: La fonction chargerFilms prend maintenant un argument optionnel pour le filtre
     function chargerFilms(filterQuery = '') {
       const storedFilms = JSON.parse(localStorage.getItem('cinebook_films')) || [];
       filmsData = [];
@@ -511,9 +540,8 @@
       }
 
       const tri = triSelect.value;
-      let filteredFilms = [...filmsData]; // Créer une copie pour le filtrage
+      let filteredFilms = [...filmsData];
 
-      // APPLIQUER LE FILTRE DE RECHERCHE GLOBALE
       if (filterQuery.trim() !== '') {
           const lowerCaseQuery = filterQuery.toLowerCase();
           filteredFilms = filteredFilms.filter(film => {
@@ -523,7 +551,7 @@
           });
       }
 
-      filteredFilms.sort((a, b) => { // Trier les films filtrés
+      filteredFilms.sort((a, b) => {
         if (tri === 'dateDesc') {
           return new Date(b.date || '0000-01-01') - new Date(a.date || '0000-01-01');
         } else if (tri === 'dateAsc') {
@@ -545,7 +573,7 @@
           filmList.innerHTML = '<p style="text-align: center; color: #9ca3af;">Aucun film trouvé avec cette recherche.</p>';
       }
 
-      filteredFilms.forEach((film) => { // Afficher les films filtrés
+      filteredFilms.forEach((film) => {
         const div = document.createElement('div');
         div.className = 'film';
         div.dataset.id = film.id;
@@ -587,7 +615,7 @@
           if (confirm(`Supprimer "${filmsData.find(f => f.id === filmIdToDelete)?.title}" ?`)) {
             filmsData = filmsData.filter(f => f.id !== filmIdToDelete);
             localStorage.setItem('cinebook_films', JSON.stringify(filmsData));
-            chargerFilms(globalSearchInput.value); // Recharger avec le filtre actuel
+            chargerFilms(globalSearchInput.value);
             updateDirectorDatalist();
             displayDirectorRanking();
           }
@@ -619,6 +647,7 @@
                     filmPosterPreview.src = filmToEdit.posterUrl;
                     filmPosterPreview.style.display = 'inline-block';
                 } else {
+                    posterUrlInput.value = '';
                     filmPosterPreview.style.display = 'none';
                     filmPosterPreview.src = '';
                 }
@@ -691,10 +720,10 @@
       form.reset();
       setStarRating(0);
       filmPosterPreview.style.display = 'none';
-      chargerFilms(globalSearchInput.value); // Recharger avec le filtre actuel après ajout/modification
+      chargerFilms(globalSearchInput.value);
     });
 
-    triSelect.addEventListener('change', () => chargerFilms(globalSearchInput.value)); // Appliquer le filtre après tri
+    triSelect.addEventListener('change', () => chargerFilms(globalSearchInput.value));
     triDirectorSelect.addEventListener('change', displayDirectorRanking);
 
     mainTitle.addEventListener('click', () => {
@@ -703,9 +732,8 @@
       });
     });
 
-    // ÉCOUTER LES SAISIES DANS LE NOUVEAU CHAMP DE RECHERCHE GLOBALE
     globalSearchInput.addEventListener('input', (e) => {
-        chargerFilms(e.target.value); // Appeler chargerFilms avec la valeur du champ de recherche
+        chargerFilms(e.target.value);
     });
 
 
@@ -833,7 +861,7 @@
     });
 
     window.addEventListener('load', () => {
-        chargerFilms(); // Charge les films sans filtre au démarrage
+        chargerFilms();
         updateDirectorDatalist();
         displayDirectorRanking();
         setStarRating(0);
