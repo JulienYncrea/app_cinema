@@ -546,14 +546,13 @@
 
                 div.innerHTML = `
                     <div class="film-header">
-                        <div>
-                            <div class="film-title">${film.title}</div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                ${directorDisplay}
-                                <span class="film-average">${avgNoteStars}</span>
-                            </div>
+                        <div style="flex-grow: 1;"> <div class="film-title">${film.title}</div>
                         </div>
+                        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                            ${directorDisplay}
+                            <span class="film-average">${avgNoteStars}</span>
                         </div>
+                    </div>
                     <div class="film-details">
                         ${detailPosterHtml}
                         <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
