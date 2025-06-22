@@ -351,8 +351,8 @@
         // REMPLACEZ 'VOTRE_CLE_API_TMDB' par votre clé API TheMovieDB
         const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11'; // La clé correcte à utiliser
         const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-        const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92'; // w92 pour une petite affiche
-        const TMDB_LARGE_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w300'; // w300 pour une affiche plus grande dans les détails
+        const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w92'; // w92 pour une petite affiche
+        const TMDB_LARGE_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w300'; // w300 pour une affiche plus grande dans les détails
 
         let filmsData = [];
         let debounceTimer;
@@ -524,7 +524,7 @@
                 filmList.innerHTML = '<p style="text-align: center; color: #d1d5db;">Aucun film trouvé pour cette recherche.</p>';
                 return;
             } else if (filteredFilms.length === 0) {
-                 filmList.innerHTML = '<p style="text-align: center; color: #d1d5db;">Aucun film ajouté pour le moment.</p>';
+                filmList.innerHTML = '<p style="text-align: center; color: #d1d5db;">Aucun film ajouté pour le moment.</p>';
                 return;
             }
 
@@ -556,8 +556,8 @@
                         <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
                         <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
                         <p><strong>Date de visionnage :</strong> ${formatDate(film.date)}</p>
-                        <p><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis disponible)'}</p>
                         <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
+                        <p style="margin-top: 1em;"><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis disponible)'}</p>
                         <button class="btn-action btn-edit" data-id="${film.id}" title="Modifier ce film">✏️ Modifier</button>
                         <button class="btn-action btn-delete" data-id="${film.id}" title="Supprimer ce film">🗑️ Supprimer</button>
                     </div>
@@ -650,7 +650,7 @@
                 // une suggestion mais a peut-être tapé directement dans titleSearchInput.
                 // On utilise alors la valeur de titleSearchInput comme titre.
                 if (!titleSearchInput.value.trim()) {
-                     return alert('Le titre du film est requis.');
+                    return alert('Le titre du film est requis.');
                 }
                 titleInput.value = titleSearchInput.value.trim();
             }
@@ -760,72 +760,61 @@
             );
             
             if (!selectedOption) {
-                titleInput.value = currentValue; // Permet la saisie manuelle si pas de correspondance
+                titleInput.value = '';
                 posterUrlInput.value = '';
+                synopsisInput.value = '';
                 filmPosterPreview.style.display = 'none';
                 filmPosterPreview.src = '';
-                directorInput.value = '';
-                synopsisInput.value = ''; // Efface le synopsis si la sélection est perdue
             }
-
             searchMovies(e.target.value);
         });
 
         titleSearchInput.addEventListener('change', async (e) => {
-            const selectedOption = Array.from(filmSuggestionsDatalist.options).find(
-                option => option.value === e.target.value
-            );
+            const selectedValue = e.target.value;
+            const selectedOption = Array.from(filmSuggestionsDatalist.options).find(option => option.value === selectedValue);
 
             if (selectedOption) {
                 const movieId = selectedOption.dataset.id;
-                titleInput.value = selectedOption.value; // Assure que titleInput a le titre exact de la suggestion
-                
                 const posterPath = selectedOption.dataset.posterPath;
-                if (posterPath) {
-                    const fullPosterUrl = `${TMDB_IMAGE_BASE_URL}${posterPath}`; 
-                    posterUrlInput.value = fullPosterUrl;
-                    filmPosterPreview.src = fullPosterUrl;
+                const overview = selectedOption.dataset.overview; // Récupère le synopsis de l'option
+
+                titleInput.value = selectedValue; // Mettre à jour le champ caché avec le titre sélectionné
+                posterUrlInput.value = posterPath ? `${TMDB_IMAGE_BASE_URL}${posterPath}` : '';
+                synopsisInput.value = overview; // Remplit le synopsis avec celui de l'API
+
+                if (posterUrlInput.value) {
+                    filmPosterPreview.src = posterUrlInput.value;
                     filmPosterPreview.style.display = 'inline-block';
                 } else {
-                    posterUrlInput.value = '';
                     filmPosterPreview.style.display = 'none';
                     filmPosterPreview.src = '';
                 }
-                
-                synopsisInput.value = selectedOption.dataset.overview || ''; // Pré-remplit le synopsis
 
-                if (movieId) {
-                    const movieDetails = await getMovieDetails(movieId);
-                    if (movieDetails && movieDetails.credits && movieDetails.credits.crew) {
-                        const director = movieDetails.credits.crew.find(
-                            (member) => member.job === 'Director'
-                        );
-                        if (director) {
-                            directorInput.value = director.name;
-                        } else {
-                            directorInput.value = '';
-                        }
+                // Récupérer le réalisateur via l'API (nécessite un appel détaillé)
+                const movieDetails = await getMovieDetails(movieId);
+                if (movieDetails && movieDetails.credits && movieDetails.credits.crew) {
+                    const director = movieDetails.credits.crew.find(person => person.job === 'Director');
+                    if (director) {
+                        directorInput.value = director.name;
                     } else {
                         directorInput.value = '';
                     }
+                } else {
+                    directorInput.value = '';
                 }
             } else {
-                // Si l'utilisateur tape un titre qui n'est pas dans la datalist, on le garde quand même
-                titleInput.value = e.target.value; 
+                // Si l'utilisateur a tapé un titre sans sélectionner de suggestion
+                titleInput.value = selectedValue;
                 posterUrlInput.value = '';
-                synopsisInput.value = ''; 
+                synopsisInput.value = ''; // Efface le synopsis s'il n'y a pas de sélection
                 filmPosterPreview.style.display = 'none';
                 filmPosterPreview.src = '';
-                directorInput.value = ''; // On efface le réalisateur et synopsis si pas de suggestion valide
+                directorInput.value = '';
             }
         });
 
-        window.addEventListener('load', () => {
-            chargerFilms();
-            updateDirectorDatalist();
-            displayDirectorRanking();
-            setStarRating(0);
-        });
+        // Initialisation
+        chargerFilms();
     </script>
 </body>
 </html>
