@@ -332,6 +332,10 @@
     const posterUrlInput = document.getElementById('posterUrl'); // Le champ caché pour l'URL de l'affiche
     const filmPosterPreview = document.getElementById('filmPosterPreview');
     const directorInput = document.getElementById('director'); // Récupérer l'input du réalisateur
+    // NOUVEAU: Déclaration des variables dateInput et commentaireInput
+    const dateInput = document.getElementById('date');
+    const commentaireInput = document.getElementById('commentaire');
+
 
     // REMPLACEZ 'VOTRE_CLE_API_TMDB' par votre clé API TheMovieDB
     const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11'; // La clé correcte à utiliser
@@ -545,7 +549,7 @@
                 titleSearchInput.value = filmToEdit.title; // Mettre le titre dans le champ de recherche
                 titleInput.value = filmToEdit.title; // Mettre à jour le champ caché
                 directorInput.value = filmToEdit.director || ''; // Pré-remplir le réalisateur
-                dateInput.value = filmToEdit.date;
+                dateInput.value = filmToEdit.date; // Utilisez la variable déclarée
                 // Correction de la note pour l'édition (cappage à 5)
                 let displayRating = Number(filmToEdit.global);
                 if (isNaN(displayRating) || displayRating < 1) {
@@ -554,7 +558,7 @@
                     displayRating = 5; // Capper à 5 pour le formulaire d'édition
                 }
                 setStarRating(displayRating); // Utiliser la note ajustée
-                commentaireInput.value = filmToEdit.commentaire;
+                commentaireInput.value = filmToEdit.commentaire; // Utilisez la variable déclarée
                 posterUrlInput.value = filmToEdit.posterUrl || ''; // Charger l'URL de l'affiche
                 
                 if (filmToEdit.posterUrl) {
@@ -607,9 +611,9 @@
       const film = {
         title: titleInput.value.trim(),
         director: directorInput.value.trim(),
-        date: dateInput.value,
+        date: dateInput.value, // Utilisez la variable déclarée
         global: globalRatingInput.value,
-        commentaire: commentaireInput.value.trim(),
+        commentaire: commentaireInput.value.trim(), // Utilisez la variable déclarée
         posterUrl: posterUrlInput.value || '' // Enregistrer l'URL de l'affiche
       };
 
