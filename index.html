@@ -211,18 +211,6 @@
             vertical-align: middle;
             border-radius: 5px;
         }
-        /* L'affiche n'apparaît plus ici par défaut. On la gère dans les détails. */
-        /* .film-poster {
-            width: 40px; 
-            height: 60px;
-            object-fit: cover;
-            margin-right: 10px;
-            border-radius: 3px;
-        } */
-        .film-header {
-            display: flex;
-            align-items: center; /* Centrer verticalement l'image et le texte */
-        }
         /* Style pour l'affiche dans les détails, si elle est présente */
         .film-details .detail-poster {
             max-width: 100px; /* Taille légèrement plus grande dans les détails */
@@ -271,12 +259,14 @@
         <datalist id="filmSuggestions"></datalist>
         <input type="hidden" id="title" required /> 
         <input type="hidden" id="posterUrl" /> 
-        <input type="hidden" id="synopsis" /> <img id="filmPosterPreview" src="" alt="Affiche du film" style="display:none;" />
-
+        <img id="filmPosterPreview" src="" alt="Affiche du film" style="display:none;" />
 
         <label for="director">Réalisateur</label>
         <input type="text" id="director" list="directorList" placeholder="Ajouter un réalisateur ou en choisir un" />
         <datalist id="directorList"></datalist>
+
+        <label for="synopsisInput">Synopsis</label>
+        <textarea id="synopsisInput" placeholder="Synopsis du film..."></textarea>
 
         <label for="date">Date de visionnage *</label>
         <input type="date" id="date" />
@@ -290,7 +280,6 @@
             <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 étoile">★</label>
         </div>
         <input type="hidden" id="global" required />
-
 
         <label for="commentaire">Commentaire</label>
         <textarea id="commentaire" placeholder="Votre avis sur le film..."></textarea>
@@ -349,7 +338,7 @@
         const filmSuggestionsDatalist = document.getElementById('filmSuggestions');
         const titleInput = document.getElementById('title'); // Le champ caché pour le titre réel
         const posterUrlInput = document.getElementById('posterUrl'); // Le champ caché pour l'URL de l'affiche
-        const synopsisInput = document.getElementById('synopsis'); // Nouveau champ caché pour le synopsis
+        const synopsisInput = document.getElementById('synopsisInput'); // Nouveau champ VISIBLE pour le synopsis
         const filmPosterPreview = document.getElementById('filmPosterPreview');
         const directorInput = document.getElementById('director'); // Récupérer l'input du réalisateur
         const dateInput = document.getElementById('date');
@@ -455,7 +444,8 @@
                     return a.averageScore - b.averageScore;
                 } else if (triDirector === 'filmCountDesc') {
                     return b.filmCount - a.filmCount;
-                } else if (triDirector === 'filmCountAsc') {
+                }
+                else if (triDirector === 'filmCountAsc') {
                     return a.filmCount - b.filmCount;
                 }
                 return 0;
@@ -552,7 +542,7 @@
 
                 const detailPosterHtml = posterLargeUrl
                     ? `<p><img src="${posterLargeUrl}" alt="Affiche de ${film.title}" class="detail-poster" onerror="onImageError(this);" /></p>`
-                    : ''; // L'image dans la liste n'est plus affichée ici.
+                    : '';
 
                 div.innerHTML = `
                     <div class="film-header">
@@ -562,13 +552,13 @@
                         </div>
                         <div>
                             <span class="film-average">${avgNoteStars}</span>
-                            <span class="film-date">${formatDate(film.date)}</span>
                         </div>
                     </div>
                     <div class="film-details">
                         ${detailPosterHtml}
                         <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
                         <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
+                        <p><strong>Date de visionnage :</strong> ${formatDate(film.date)}</p>
                         <p><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis disponible)'}</p>
                         <p><strong>Commentaire :</strong> ${film.commentaire || '(pas de commentaire)'}</p>
                         <button class="btn-action btn-edit" data-id="${film.id}" title="Modifier ce film">✏️ Modifier</button>
@@ -599,8 +589,8 @@
                     const filmToEdit = filmsData.find(f => f.id === filmIdToEdit);
 
                     if (filmToEdit) {
-                        titleSearchInput.value = filmToEdit.title;
-                        titleInput.value = filmToEdit.title;
+                        titleSearchInput.value = filmToEdit.title; // Afficher le titre dans la barre de recherche
+                        titleInput.value = filmToEdit.title; // Stocker le titre réel
                         directorInput.value = filmToEdit.director || '';
                         dateInput.value = filmToEdit.date;
                         let displayRating = Number(filmToEdit.global);
@@ -612,7 +602,7 @@
                         setStarRating(displayRating);
                         commentaireInput.value = filmToEdit.commentaire;
                         posterUrlInput.value = filmToEdit.posterUrl || '';
-                        synopsisInput.value = filmToEdit.synopsis || ''; // Charger le synopsis existant
+                        synopsisInput.value = filmToEdit.synopsis || ''; // Charger le synopsis existant dans le textarea
                         
                         if (filmToEdit.posterUrl) {
                             filmPosterPreview.src = filmToEdit.posterUrl;
@@ -632,8 +622,12 @@
                 header.addEventListener('click', () => {
                     const visible = details.style.display === 'block';
 
-                    document.querySelectorAll('.film-details').forEach(d => d.style.display = 'none');
-
+                    // Fermer tous les détails ouverts sauf celui-ci
+                    document.querySelectorAll('.film-details').forEach(d => {
+                        if (d !== details) {
+                            d.style.display = 'none';
+                        }
+                    });
                     details.style.display = visible ? 'none' : 'block';
                 });
 
@@ -655,20 +649,27 @@
             e.preventDefault();
 
             if (!titleInput.value.trim()) {
-                return alert('Le titre du film est requis.');
+                // Si titleInput est vide, cela signifie que l'utilisateur n'a pas sélectionné
+                // une suggestion mais a peut-être tapé directement dans titleSearchInput.
+                // On utilise alors la valeur de titleSearchInput comme titre.
+                if (!titleSearchInput.value.trim()) {
+                     return alert('Le titre du film est requis.');
+                }
+                titleInput.value = titleSearchInput.value.trim();
             }
+
             if (!globalRatingInput.value || Number(globalRatingInput.value) < 1 || Number(globalRatingInput.value) > 5) {
                 return alert('La note globale est obligatoire et doit être comprise entre 1 et 5 étoiles.');
             }
 
             const film = {
-                title: titleInput.value.trim(),
+                title: titleInput.value.trim(), // Utilise titleInput (qui est mis à jour soit par la sélection API, soit par la saisie manuelle)
                 director: directorInput.value.trim(),
                 date: dateInput.value,
                 global: globalRatingInput.value,
                 commentaire: commentaireInput.value.trim(),
                 posterUrl: posterUrlInput.value || '',
-                synopsis: synopsisInput.value || '' // Enregistrer le synopsis
+                synopsis: synopsisInput.value.trim() || '' // Récupère le synopsis du nouveau textarea
             };
 
             const editingId = form.dataset.editingId;
@@ -754,6 +755,22 @@
         }
 
         titleSearchInput.addEventListener('input', (e) => {
+            // Réinitialise titleInput si l'utilisateur change la recherche après une sélection
+            // ou si la saisie ne correspond plus à une suggestion
+            const currentValue = e.target.value.trim();
+            const selectedOption = Array.from(filmSuggestionsDatalist.options).find(
+                option => option.value === currentValue
+            );
+            
+            if (!selectedOption) {
+                titleInput.value = currentValue; // Permet la saisie manuelle si pas de correspondance
+                posterUrlInput.value = '';
+                filmPosterPreview.style.display = 'none';
+                filmPosterPreview.src = '';
+                directorInput.value = '';
+                synopsisInput.value = ''; // Efface le synopsis si la sélection est perdue
+            }
+
             searchMovies(e.target.value);
         });
 
@@ -764,7 +781,7 @@
 
             if (selectedOption) {
                 const movieId = selectedOption.dataset.id;
-                titleInput.value = selectedOption.value;
+                titleInput.value = selectedOption.value; // Assure que titleInput a le titre exact de la suggestion
                 
                 const posterPath = selectedOption.dataset.posterPath;
                 if (posterPath) {
@@ -778,7 +795,7 @@
                     filmPosterPreview.src = '';
                 }
                 
-                synopsisInput.value = selectedOption.dataset.overview || ''; // Récupère le synopsis de la datalist
+                synopsisInput.value = selectedOption.dataset.overview || ''; // Pré-remplit le synopsis
 
                 if (movieId) {
                     const movieDetails = await getMovieDetails(movieId);
@@ -796,12 +813,13 @@
                     }
                 }
             } else {
-                titleInput.value = e.target.value;
+                // Si l'utilisateur tape un titre qui n'est pas dans la datalist, on le garde quand même
+                titleInput.value = e.target.value; 
                 posterUrlInput.value = '';
-                synopsisInput.value = ''; // Efface le synopsis si pas de sélection valide
+                synopsisInput.value = ''; 
                 filmPosterPreview.style.display = 'none';
                 filmPosterPreview.src = '';
-                directorInput.value = '';
+                directorInput.value = ''; // On efface le réalisateur et synopsis si pas de suggestion valide
             }
         });
 
