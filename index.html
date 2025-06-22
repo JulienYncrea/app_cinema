@@ -18,21 +18,20 @@
       text-align: center;
       color: #fbbf24;
     }
-    /* Style pour le titre principal et le logo cliquable */
     #mainTitle {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 0.5rem; /* Espace entre le texte et le logo */
+      gap: 0.5rem;
       color: #fbbf24;
-      cursor: pointer; /* Indique que le titre est cliquable */
+      cursor: pointer;
     }
     #mainTitle .logo {
-        margin-left: 0.5rem; /* Espace le logo du texte */
-        font-size: 1.2em; /* Taille du logo (emoji) */
+        margin-left: 0.5rem;
+        font-size: 1.2em;
     }
 
-    form, .film-list, .director-ranking-container { /* Retiré .controls d'ici car il a un style spécifique maintenant */
+    form, .film-list, .director-ranking-container {
       max-width: 600px;
       margin: 1rem auto;
       background: #374151;
@@ -131,34 +130,30 @@
       resize: vertical;
       min-height: 60px;
     }
-    /* MODIFICATION ICI pour le conteneur controls */
     .controls {
       display: flex;
-      flex-wrap: wrap; /* Permet aux éléments de passer à la ligne sur petits écrans */
-      justify-content: flex-end; /* Aligner les éléments à droite */
-      align-items: center; /* Centrer verticalement les éléments */
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      align-items: center;
       gap: 1rem;
-      max-width: 600px; /* Limite la largeur du conteneur */
-      margin: 1rem auto; /* Centre le conteneur */
+      max-width: 600px;
+      margin: 1rem auto;
       background: #374151;
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
       margin-bottom: 0;
     }
-    /* Style pour le sélecteur de tri */
     .controls select {
-      max-width: 180px; /* Largeur max pour le select */
-      width: auto; /* Permet au select de s'adapter à son contenu mais pas de déborder */
-      flex-shrink: 0; /* Empêche le select de rétrécir */
+      max-width: 180px;
+      width: auto;
+      flex-shrink: 0;
     }
-    /* Style pour le label du tri */
     .controls label {
-        margin-top: 0; /* Pas de marge en haut pour les labels dans les controls */
-        display: inline-block; /* Pour qu'il prenne moins de place */
+        margin-top: 0;
+        display: inline-block;
         flex-shrink: 0;
     }
 
-    /* Boutons suppression et modification dans détails */
     .btn-action {
       background: #ef4444;
       border: none;
@@ -182,7 +177,6 @@
       background: #1d4ed8;
     }
 
-    /* Styles pour le classement des réalisateurs */
     .director-ranking-container {
       margin-top: 2rem;
       background: #374151;
@@ -215,10 +209,9 @@
       font-weight: bold;
     }
 
-    /* Styles pour le sélecteur d'étoiles */
     .star-rating {
       display: inline-block;
-      direction: rtl; /* Pour aligner les étoiles à droite, les clics fonctionnent de gauche à droite */
+      direction: rtl;
     }
     .star-rating input[type="radio"] {
       display: none;
@@ -231,14 +224,13 @@
       padding: 0 2px;
     }
     .star-rating input[type="radio"]:checked ~ label {
-      color: #fbbf24; /* Couleur de l'étoile sélectionnée et celles avant */
+      color: #fbbf24;
     }
     .star-rating label:hover,
     .star-rating label:hover ~ label {
-      color: #fcd34d; /* Couleur des étoiles au survol */
+      color: #fcd34d;
     }
 
-    /* Styles pour la prévisualisation de l'affiche */
     #filmPosterPreview {
         max-width: 60px;
         height: auto;
@@ -246,11 +238,8 @@
         vertical-align: middle;
         border-radius: 5px;
     }
-    /* MODIFICATION : Styles pour le champ de recherche globale */
     #globalSearch {
-        /* On le retire des styles globaux pour input pour le placer dans .controls */
-        /* width: 100%; <-- RETIRE */
-        max-width: 180px; /* Même largeur max que le select */
+        max-width: 180px;
         padding: 0.75rem;
         font-size: 1.1rem;
         border-radius: 0.5rem;
@@ -258,131 +247,84 @@
         background-color: #1f2937;
         color: #f9fafb;
         box-sizing: border-box;
-        margin-left: auto; /* Pousse le champ à droite dans le conteneur flex */
-        margin-top: 0; /* Pas de marge en haut dans le conteneur flex */
+        margin-left: auto;
+        margin-top: 0;
     }
     #globalSearch::placeholder {
         color: #9ca3af;
     }
 
-    /* Ajustement media queries pour mobile */
+    /* ************************************** */
+    /* NOUVELLES MODIFICATIONS POUR MOBILE */
+    /* ************************************** */
     @media (max-width: 640px) {
-      .film-header {
-        flex-direction: row;
-        align-items: flex-start;
-        flex-wrap: wrap;
-      }
-      .film-info-main {
-        flex-grow: 1;
-        width: calc(100% - 70px);
-      }
-      .film-date {
-        margin-top: 0.2rem;
-        width: 100%;
-      }
-      .film-average {
-        order: -1;
-        margin-left: auto;
-        width: 100%;
-        text-align: right;
-      }
-      .film-poster {
-        margin-right: 1rem;
-      }
-      /* MODIFICATION pour les controls sur mobile */
+      /* Controls (Tri et Recherche Globale) */
       .controls {
-        flex-direction: column; /* Les éléments s'empilent */
-        align-items: flex-start; /* Aligner à gauche */
+        flex-direction: column; /* Empilement vertical */
+        align-items: flex-start; /* Alignement à gauche */
+        gap: 0.5rem; /* Réduire l'espacement */
+        padding: 1rem; /* Assurer un padding suffisant */
       }
       .controls label,
       .controls select,
       #globalSearch {
         width: 100%; /* Prend toute la largeur disponible */
-        max-width: 100%; /* S'adapte à 100% */
-        margin-left: 0; /* Supprime le margin-left auto */
-        margin-top: 0.5rem; /* Ajoute un peu de marge entre les éléments empilés */
+        max-width: 100%; /* Important pour que ça s'adapte à 100% */
+        margin-left: 0; /* Annule le margin-left: auto */
+        margin-top: 0 !important; /* Annule toute marge top */
+        box-sizing: border-box; /* S'assurer que padding et border sont inclus */
+      }
+      .controls label + select, /* Marge entre label et select */
+      .controls select + #globalSearch, /* Marge entre select et search */
+      .controls label + #globalSearch { /* Marge entre label et search si le select n'est pas là */
+          margin-top: 0.5rem !important; /* Ajoute un peu de marge entre les éléments empilés */
+      }
+
+
+      /* Affichage du Film (film-header) */
+      .film-header {
+        flex-direction: row; /* Garde l'affiche et les infos sur la même ligne initiale */
+        align-items: flex-start; /* Aligner en haut pour le texte */
+        flex-wrap: wrap; /* Permet le retour à la ligne si pas assez d'espace */
+        justify-content: flex-start; /* Aligner tout à gauche par défaut */
+      }
+      .film-poster {
+        margin-right: 1rem; /* Espace après l'affiche */
+      }
+      .film-info-main {
+        flex-grow: 1; /* Permet aux infos de prendre l'espace restant */
+        /* width: calc(100% - 70px); <-- On peut le retirer ou le laisser, flex-grow est plus fort */
+        flex-basis: 0; /* Permet à flex-grow de fonctionner */
+      }
+      .film-title {
+        width: 100%; /* Titre prend toute la largeur disponible */
+      }
+      .film-director {
+        width: 100%; /* Réalisateur prend toute la largeur disponible */
+        margin-top: 0.2rem;
+      }
+      .film-date {
+        width: 100%; /* Date prend toute la largeur disponible */
+        margin-top: 0.2rem;
+      }
+      .film-average {
+        /* On veut qu'il soit à droite du bloc principal, pas au-dessus de l'affiche */
+        order: 0; /* Réinitialiser l'ordre, pour qu'il soit après film-info-main */
+        margin-left: auto; /* Pousse la note tout à droite */
+        align-self: flex-start; /* Aligne la note en haut de sa ligne */
+        width: auto; /* La note reprend sa largeur naturelle */
+        text-align: right; /* Aligner le texte à droite */
+        /* Si l'espace est vraiment limité, on pourrait le faire passer à la ligne suivante */
+        /* et prendre 100% si besoin, mais testons ça d'abord */
+      }
+
+      /* Si la note ne tient pas à côté de film-info-main, elle passera dessous */
+      /* Pour cela, on s'assure que film-info-main et film-average puissent grandir/rétrécir */
+      .film-info-main, .film-average {
+        min-width: 0; /* Permet à l'élément de rétrécir si nécessaire */
       }
     }
   </style>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => console.log('Service Worker enregistré:', reg.scope))
-          .catch(err => console.error('Erreur SW:', err));
-      });
-    }
-  </script>
-</head>
-<body>
-  <h1 id="mainTitle">CineBook <span class="logo">🎬</span></h1>
-
-  <form id="filmForm" autocomplete="off">
-    <label for="titleSearch">Rechercher un film *</label>
-    <input type="text" id="titleSearch" placeholder="Taper le titre du film..." list="filmSuggestions" />
-    <datalist id="filmSuggestions"></datalist>
-    <input type="hidden" id="title" required />
-    <input type="hidden" id="posterUrl" />
-    <img id="filmPosterPreview" src="" alt="Affiche du film" style="display:none;" />
-
-
-    <label for="director">Réalisateur</label>
-    <input type="text" id="director" list="directorList" placeholder="Ajouter un réalisateur ou en choisir un" />
-    <datalist id="directorList"></datalist>
-
-    <label for="date">Date de visionnage *</label>
-    <input type="date" id="date" />
-
-    <label for="global">Note globale *</label>
-    <div class="star-rating" id="starRatingInput">
-      <input type="radio" id="star5" name="rating" value="5" /><label for="star5" title="5 étoiles">★</label>
-      <input type="radio" id="star4" name="rating" value="4" /><label for="star4" title="4 étoiles">★</label>
-      <input type="radio" id="star3" name="rating" value="3" /><label for="star3" title="3 étoiles">★</label>
-      <input type="radio" id="star2" name="rating" value="2" /><label for="star2" title="2 étoiles">★</label>
-      <input type="radio" id="star1" name="rating" value="1" /><label for="star1" title="1 étoile">★</label>
-    </div>
-    <input type="hidden" id="global" required />
-
-
-    <label for="synopsis">Synopsis</label>
-    <textarea id="synopsis" placeholder="Synopsis du film..."></textarea>
-
-    <label for="commentaire">Commentaire</label>
-    <textarea id="commentaire" placeholder="Votre avis sur le film..."></textarea>
-
-    <button type="submit" id="addUpdateBtn">Ajouter 🎥</button>
-  </form>
-
-  <div class="controls">
-    <label for="tri">Trier les films par :</label>
-    <select id="tri">
-      <option value="dateDesc" selected>Date (du plus récent)</option>
-      <option value="dateAsc">Date (du plus ancien)</option>
-      <option value="avgDesc">Note moyenne (la plus haute)</option>
-      <option value="avgAsc">Note moyenne (la plus basse)</option>
-      <option value="directorAsc">Réalisateur (A-Z)</option>
-    </select>
-    <input type="text" id="globalSearch" placeholder="Rechercher par titre ou réalisateur..." />
-  </div>
-
-  <h2>🎞️ Films vus</h2>
-  <div class="film-list" id="filmList"></div>
-
-  <div class="director-ranking-container" id="directorRanking">
-    <h2>🏆 Classement des Réalisateurs</h2>
-    <div class="controls">
-        <label for="triDirector">Trier par :</label>
-        <select id="triDirector">
-            <option value="avgDesc" selected>Moyenne d'étoiles (décroissante)</option>
-            <option value="avgAsc">Moyenne d'étoiles (croissante)</option>
-            <option value="filmCountDesc">Nombre de films (décroissant)</option>
-            <option value="filmCountAsc">Nombre de films (croissant)</option>
-        </select>
-    </div>
-    <ul class="director-ranking-list" id="directorRankingList">
-    </ul>
-  </div>
-
   <script>
     const form = document.getElementById('filmForm');
     const filmList = document.getElementById('filmList');
@@ -405,7 +347,6 @@
     const synopsisInput = document.getElementById('synopsis');
     const commentaireInput = document.getElementById('commentaire');
     
-    // Champ de recherche globale
     const globalSearchInput = document.getElementById('globalSearch');
 
     const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11';
@@ -735,9 +676,6 @@
     globalSearchInput.addEventListener('input', (e) => {
         chargerFilms(e.target.value);
     });
-
-
-    // --- Fonctions pour la recherche de films via TMDb ---
 
     async function searchMovies(query) {
         if (query.length < 3) {
