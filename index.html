@@ -203,6 +203,26 @@
       color: #fcd34d; /* Couleur des étoiles au survol */
     }
 
+    /* Styles pour la prévisualisation de l'affiche */
+    #filmPosterPreview {
+        max-width: 60px; /* Taille petite */
+        height: auto;
+        margin-left: 10px;
+        vertical-align: middle;
+        border-radius: 5px;
+    }
+    .film-poster {
+        width: 40px; /* Taille de l'affiche dans la liste des films */
+        height: 60px;
+        object-fit: cover;
+        margin-right: 10px;
+        border-radius: 3px;
+    }
+    .film-header {
+        display: flex;
+        align-items: center; /* Centrer verticalement l'image et le texte */
+    }
+
     @media (max-width: 640px) {
       .film-header {
         flex-direction: column;
@@ -234,8 +254,11 @@
   <h1 id="mainTitle">CineBook <span class="logo">🎬</span></h1>
 
   <form id="filmForm" autocomplete="off">
-    <label for="title">Titre du film *</label>
-    <input type="text" id="title" required />
+    <label for="titleSearch">Rechercher un film *</label>
+    <input type="text" id="titleSearch" placeholder="Taper le titre du film..." list="filmSuggestions" />
+    <datalist id="filmSuggestions"></datalist>
+    <input type="hidden" id="title" required /> <input type="hidden" id="posterUrl" /> <img id="filmPosterPreview" src="" alt="Affiche du film" style="display:none;" />
+
 
     <label for="director">Réalisateur</label>
     <input type="text" id="director" list="directorList" placeholder="Ajouter un réalisateur ou en choisir un" />
@@ -302,7 +325,20 @@
     const globalRatingInput = document.getElementById('global');
     const starRatingContainer = document.getElementById('starRatingInput');
 
+    // Nouveaux éléments pour la recherche de films
+    const titleSearchInput = document.getElementById('titleSearch');
+    const filmSuggestionsDatalist = document.getElementById('filmSuggestions');
+    const titleInput = document.getElementById('title'); // Le champ caché pour le titre réel
+    const posterUrlInput = document.getElementById('posterUrl'); // Le champ caché pour l'URL de l'affiche
+    const filmPosterPreview = document.getElementById('filmPosterPreview');
+
+    // REMPLACEZ 'VOTRE_CLE_API_TMDB' par votre clé API TheMovieDB
+    const TMDB_API_KEY = 'VOTRE_CLE_API_TMDB';
+    const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+    const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92'; // w92 pour une petite affiche
+
     let filmsData = [];
+    let debounceTimer;
 
     function generateUniqueId() {
         return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
@@ -457,9 +493,13 @@
 
         const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
+        const posterHtml = film.posterUrl 
+            ? `<img src="${film.posterUrl}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='40px'; this.style.height='60px'; this.title='Affiche non disponible';" />`
+            : `<div class="film-poster" style="background-color:#333; width:40px; height:60px; display:inline-block; vertical-align:middle;" title="Affiche non disponible"></div>`; // Affiche vide si pas d'URL
 
         div.innerHTML = `
           <div class="film-header">
+            ${posterHtml}
             <div>
               <div class="film-title">${film.title}</div>
               ${directorDisplay}
@@ -501,9 +541,10 @@
             const filmToEdit = filmsData.find(f => f.id === filmIdToEdit);
 
             if (filmToEdit) {
-                form.title.value = filmToEdit.title;
-                form.director.value = filmToEdit.director || '';
-                form.date.value = filmToEdit.date;
+                titleSearchInput.value = filmToEdit.title; // Mettre le titre dans le champ de recherche
+                titleInput.value = filmToEdit.title; // Mettre à jour le champ caché
+                directorInput.value = filmToEdit.director || '';
+                dateInput.value = filmToEdit.date;
                 // Correction de la note pour l'édition (cappage à 5)
                 let displayRating = Number(filmToEdit.global);
                 if (isNaN(displayRating) || displayRating < 1) {
@@ -512,7 +553,16 @@
                     displayRating = 5; // Capper à 5 pour le formulaire d'édition
                 }
                 setStarRating(displayRating); // Utiliser la note ajustée
-                form.commentaire.value = filmToEdit.commentaire;
+                commentaireInput.value = filmToEdit.commentaire;
+                posterUrlInput.value = filmToEdit.posterUrl || ''; // Charger l'URL de l'affiche
+                
+                if (filmToEdit.posterUrl) {
+                    filmPosterPreview.src = filmToEdit.posterUrl;
+                    filmPosterPreview.style.display = 'inline-block';
+                } else {
+                    filmPosterPreview.style.display = 'none';
+                    filmPosterPreview.src = '';
+                }
 
                 addUpdateBtn.textContent = 'Modifier ✏️';
                 form.dataset.editingId = filmIdToEdit;
@@ -546,19 +596,20 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
 
-      if (!form.title.value.trim()) {
-        return alert('Le titre est requis.');
+      if (!titleInput.value.trim()) { // Vérifier le champ caché pour le titre réel
+        return alert('Le titre du film est requis.');
       }
       if (!globalRatingInput.value || Number(globalRatingInput.value) < 1 || Number(globalRatingInput.value) > 5) {
         return alert('La note globale est obligatoire et doit être comprise entre 1 et 5 étoiles.');
       }
 
       const film = {
-        title: form.title.value.trim(),
-        director: form.director.value.trim(),
-        date: form.date.value,
+        title: titleInput.value.trim(),
+        director: directorInput.value.trim(),
+        date: dateInput.value,
         global: globalRatingInput.value,
-        commentaire: form.commentaire.value.trim()
+        commentaire: commentaireInput.value.trim(),
+        posterUrl: posterUrlInput.value || '' // Enregistrer l'URL de l'affiche
       };
 
       const editingId = form.dataset.editingId;
@@ -579,6 +630,7 @@
 
       form.reset();
       setStarRating(0);
+      filmPosterPreview.style.display = 'none'; // Cacher l'aperçu de l'affiche après soumission
       chargerFilms();
     });
 
@@ -589,6 +641,74 @@
       document.getElementById('directorRanking').scrollIntoView({
         behavior: 'smooth'
       });
+    });
+
+    // --- Fonctions pour la recherche de films via TMDb ---
+
+    async function searchMovies(query) {
+        if (query.length < 3) { // Ne rechercher que si au moins 3 caractères sont tapés
+            filmSuggestionsDatalist.innerHTML = '';
+            return;
+        }
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(async () => {
+            try {
+                const response = await fetch(`${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}&language=fr-FR`);
+                if (!response.ok) {
+                    throw new Error(`Erreur HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                displayMovieSuggestions(data.results);
+            } catch (error) {
+                console.error("Erreur lors de la recherche de films:", error);
+                filmSuggestionsDatalist.innerHTML = ''; // Vider les suggestions en cas d'erreur
+            }
+        }, 300); // Délai de 300ms avant de lancer la recherche
+    }
+
+    function displayMovieSuggestions(movies) {
+        filmSuggestionsDatalist.innerHTML = '';
+        movies.forEach(movie => {
+            const option = document.createElement('option');
+            option.value = movie.title;
+            option.dataset.id = movie.id; // Stocker l'ID du film pour des recherches futures
+            option.dataset.posterPath = movie.poster_path; // Stocker le chemin de l'affiche
+            filmSuggestionsDatalist.appendChild(option);
+        });
+    }
+
+    titleSearchInput.addEventListener('input', (e) => {
+        searchMovies(e.target.value);
+    });
+
+    titleSearchInput.addEventListener('change', (e) => {
+        const selectedOption = Array.from(filmSuggestionsDatalist.options).find(
+            option => option.value === e.target.value
+        );
+
+        if (selectedOption) {
+            titleInput.value = selectedOption.value; // Mettre à jour le champ caché avec le titre complet
+            const posterPath = selectedOption.dataset.posterPath;
+            if (posterPath) {
+                const fullPosterUrl = `${TMDB_IMAGE_BASE_URL}${posterPath}`;
+                posterUrlInput.value = fullPosterUrl; // Enregistrer l'URL complète
+                filmPosterPreview.src = fullPosterUrl;
+                filmPosterPreview.style.display = 'inline-block';
+            } else {
+                posterUrlInput.value = ''; // Pas d'affiche
+                filmPosterPreview.style.display = 'none';
+                filmPosterPreview.src = '';
+            }
+            // Vous pouvez aussi chercher le réalisateur si l'API le permet (pas directement avec search/movie)
+            // Pour l'exercice, nous n'automatisons pas la recherche du réalisateur ici.
+        } else {
+            // Si l'utilisateur n'a pas sélectionné une suggestion, mais a tapé quelque chose
+            titleInput.value = e.target.value;
+            posterUrlInput.value = '';
+            filmPosterPreview.style.display = 'none';
+            filmPosterPreview.src = '';
+        }
     });
 
     window.addEventListener('load', () => {
