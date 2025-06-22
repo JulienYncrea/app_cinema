@@ -545,10 +545,9 @@
                     : '';
 
                 div.innerHTML = `
-                    <div class="film-header">
-                        <div style="flex-grow: 1;"> <div class="film-title">${film.title}</div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                    <div class="film-header" style="flex-direction: column; align-items: flex-start; width: 100%;">
+                        <div class="film-title" style="width: 100%;">${film.title}</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             ${directorDisplay}
                             <span class="film-average">${avgNoteStars}</span>
                         </div>
