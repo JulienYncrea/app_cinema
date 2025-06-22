@@ -331,9 +331,10 @@
     const titleInput = document.getElementById('title'); // Le champ caché pour le titre réel
     const posterUrlInput = document.getElementById('posterUrl'); // Le champ caché pour l'URL de l'affiche
     const filmPosterPreview = document.getElementById('filmPosterPreview');
+    const directorInput = document.getElementById('director'); // Récupérer l'input du réalisateur
 
     // REMPLACEZ 'VOTRE_CLE_API_TMDB' par votre clé API TheMovieDB
-    const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11';
+    const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11'; // La clé correcte à utiliser
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
     const TMDB_IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w92'; // w92 pour une petite affiche
 
@@ -543,7 +544,7 @@
             if (filmToEdit) {
                 titleSearchInput.value = filmToEdit.title; // Mettre le titre dans le champ de recherche
                 titleInput.value = filmToEdit.title; // Mettre à jour le champ caché
-                directorInput.value = filmToEdit.director || '';
+                directorInput.value = filmToEdit.director || ''; // Pré-remplir le réalisateur
                 dateInput.value = filmToEdit.date;
                 // Correction de la note pour l'édition (cappage à 5)
                 let displayRating = Number(filmToEdit.global);
@@ -672,23 +673,41 @@
         movies.forEach(movie => {
             const option = document.createElement('option');
             option.value = movie.title;
-            option.dataset.id = movie.id; // Stocker l'ID du film pour des recherches futures
-            option.dataset.posterPath = movie.poster_path; // Stocker le chemin de l'affiche
+            // Stocker l'ID du film pour une requête de détails ultérieure
+            option.dataset.id = movie.id; 
+            option.dataset.posterPath = movie.poster_path; 
             filmSuggestionsDatalist.appendChild(option);
         });
+    }
+
+    // Nouvelle fonction pour obtenir les détails du film (y compris l'équipe)
+    async function getMovieDetails(movieId) {
+        try {
+            const response = await fetch(`${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&append_to_response=credits&language=fr-FR`);
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Erreur lors de la récupération des détails du film ${movieId}:`, error);
+            return null;
+        }
     }
 
     titleSearchInput.addEventListener('input', (e) => {
         searchMovies(e.target.value);
     });
 
-    titleSearchInput.addEventListener('change', (e) => {
+    titleSearchInput.addEventListener('change', async (e) => {
         const selectedOption = Array.from(filmSuggestionsDatalist.options).find(
             option => option.value === e.target.value
         );
 
         if (selectedOption) {
+            const movieId = selectedOption.dataset.id;
             titleInput.value = selectedOption.value; // Mettre à jour le champ caché avec le titre complet
+            
             const posterPath = selectedOption.dataset.posterPath;
             if (posterPath) {
                 const fullPosterUrl = `${TMDB_IMAGE_BASE_URL}${posterPath}`;
@@ -700,14 +719,30 @@
                 filmPosterPreview.style.display = 'none';
                 filmPosterPreview.src = '';
             }
-            // Vous pouvez aussi chercher le réalisateur si l'API le permet (pas directement avec search/movie)
-            // Pour l'exercice, nous n'automatisons pas la recherche du réalisateur ici.
+
+            // Récupérer les détails du film pour le réalisateur
+            if (movieId) {
+                const movieDetails = await getMovieDetails(movieId);
+                if (movieDetails && movieDetails.credits && movieDetails.credits.crew) {
+                    const director = movieDetails.credits.crew.find(
+                        (member) => member.job === 'Director'
+                    );
+                    if (director) {
+                        directorInput.value = director.name; // Pré-remplir le champ réalisateur
+                    } else {
+                        directorInput.value = ''; // Effacer si aucun réalisateur trouvé
+                    }
+                } else {
+                    directorInput.value = ''; // Effacer si pas de crédits ou d'équipe
+                }
+            }
         } else {
             // Si l'utilisateur n'a pas sélectionné une suggestion, mais a tapé quelque chose
             titleInput.value = e.target.value;
             posterUrlInput.value = '';
             filmPosterPreview.style.display = 'none';
             filmPosterPreview.src = '';
+            directorInput.value = ''; // Effacer le réalisateur si pas de sélection valide
         }
     });
 
