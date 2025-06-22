@@ -74,21 +74,15 @@
     }
     .film-header {
       display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      justify-content: space-between;
+      align-items: center; /* Aligner verticalement au centre */
+      justify-content: space-between; /* Répartir l'espace entre les éléments */
+      gap: 1rem; /* Espace entre les éléments */
     }
-    .film-poster {
-        width: 60px;
-        height: 90px;
-        object-fit: cover;
-        flex-shrink: 0;
-        border-radius: 3px;
-    }
+    /* L'affiche n'est plus dans le header, mais dans les détails */
     .film-info-main {
         display: flex;
         flex-direction: column;
-        flex-grow: 1;
+        flex-grow: 1; /* Permet aux infos de prendre l'espace restant */
     }
     .film-title {
       font-weight: bold;
@@ -109,8 +103,8 @@
         font-size: 0.9rem;
         color: #fbbf24;
         white-space: nowrap;
-        align-self: flex-start;
-        margin-left: auto;
+        align-self: center; /* Aligne la note verticalement au centre de la ligne */
+        margin-left: auto; /* Pousse la note tout à droite */
         flex-shrink: 0;
     }
 
@@ -126,6 +120,22 @@
     .film-details p {
       margin: 0.2rem 0;
     }
+    /* Style pour l'affiche quand elle est dans les détails */
+    .film-details .film-poster {
+        width: 90px; /* Taille un peu plus grande dans les détails */
+        height: 135px;
+        object-fit: cover;
+        border-radius: 3px;
+        float: left; /* Pour que le texte s'enroule autour */
+        margin-right: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    .film-details::after { /* Clearfix pour le float */
+        content: "";
+        display: table;
+        clear: both;
+    }
+
     textarea {
       resize: vertical;
       min-height: 60px;
@@ -283,15 +293,12 @@
 
       /* Affichage du Film (film-header) */
       .film-header {
-        flex-direction: row; /* Garde l'affiche et les infos sur la même ligne */
+        flex-direction: row; /* Garde les infos sur la même ligne */
         flex-wrap: nowrap; /* EMPÊCHE le retour à la ligne pour les éléments principaux */
         align-items: center; /* Aligner verticalement au centre pour les éléments principaux */
-        justify-content: flex-start; /* Aligner tout à gauche */
+        justify-content: space-between; /* Répartir l'espace entre les infos et la note */
       }
-      .film-poster {
-        margin-right: 0.75rem; /* Rapproche l'image et le titre */
-        flex-shrink: 0; /* Empêche l'affiche de rétrécir */
-      }
+      /* L'affiche n'est plus dans le header, donc pas de style ici */
       .film-info-main {
         display: flex; /* Le contenu interne (titre, réalisateur, date) reste empilé */
         flex-direction: column;
@@ -430,7 +437,8 @@
 
     const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11';
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w92';
+    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w92'; // Pour la preview
+    const TMDB_IMAGE_DETAIL_BASE_URL = 'https://image.themoviedb.org/t/p/w185'; // Pour l'affiche dans les détails
 
     let filmsData = [];
     let debounceTimer;
@@ -600,13 +608,15 @@
 
         const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
-        const posterHtml = film.posterUrl 
-            ? `<img src="${film.posterUrl}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='60px'; this.style.height='90px'; this.title='Affiche non disponible';" />`
-            : `<div class="film-poster" style="background-color:#333; width:60px; height:90px; display:inline-block; vertical-align:top;" title="Affiche non disponible"></div>`;
+        
+        // L'affiche est maintenant dans les détails
+        const posterHtmlInDetails = film.posterUrl 
+            ? `<img src="${film.posterUrl.replace('/w92/', '/w185/')}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='90px'; this.style.height='135px'; this.title='Affiche non disponible';" />`
+            : `<div class="film-poster" style="background-color:#333; width:90px; height:135px; display:inline-block; vertical-align:top;" title="Affiche non disponible"></div>`;
+
 
         div.innerHTML = `
           <div class="film-header">
-            ${posterHtml}
             <div class="film-info-main">
               <div class="film-title">${film.title}</div>
               ${directorDisplay}
@@ -615,6 +625,7 @@
             <span class="film-average">${avgNoteStars}</span>
           </div>
           <div class="film-details">
+            ${posterHtmlInDetails}
             <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
             <p><strong>Note globale :</strong> ${displayStars(film.global)} (${film.global}/5)</p>
             <p><strong>Synopsis :</strong> ${film.synopsis || '(pas de synopsis)'}</p>
@@ -663,8 +674,9 @@
                 commentaireInput.value = filmToEdit.commentaire;
                 posterUrlInput.value = filmToEdit.posterUrl || '';
                 
+                // Utiliser la taille d'image de preview pour le champ de formulaire
                 if (filmToEdit.posterUrl) {
-                    filmPosterPreview.src = filmToEdit.posterUrl;
+                    filmPosterPreview.src = filmToEdit.posterUrl.replace('/w185/', '/w92/');
                     filmPosterPreview.style.display = 'inline-block';
                 } else {
                     posterUrlInput.value = '';
@@ -682,6 +694,7 @@
         header.addEventListener('click', () => {
           const visible = details.style.display === 'block';
 
+          // Fermer tous les autres détails avant d'ouvrir celui-ci
           document.querySelectorAll('.film-details').forEach(d => d.style.display = 'none');
 
           details.style.display = visible ? 'none' : 'block';
@@ -841,9 +854,13 @@
             
             const posterPath = selectedOption.dataset.posterPath;
             if (posterPath) {
-                const fullPosterUrl = `${TMDB_IMAGE_BASE_URL}${posterPath}`;
-                posterUrlInput.value = fullPosterUrl;
-                filmPosterPreview.src = fullPosterUrl;
+                // Utiliser TMDB_IMAGE_BASE_URL pour la preview dans le formulaire
+                const fullPosterUrlPreview = `${TMDB_IMAGE_BASE_URL}${posterPath}`;
+                // Stocker l'URL pour les détails (taille plus grande)
+                const fullPosterUrlDetail = `${TMDB_IMAGE_DETAIL_BASE_URL}${posterPath}`;
+
+                posterUrlInput.value = fullPosterUrlDetail; // Stocker l'URL pour les détails
+                filmPosterPreview.src = fullPosterUrlPreview; // Afficher la preview
                 filmPosterPreview.style.display = 'inline-block';
             } else {
                 posterUrlInput.value = '';
