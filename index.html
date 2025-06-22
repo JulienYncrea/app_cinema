@@ -548,12 +548,12 @@
                     <div class="film-header">
                         <div>
                             <div class="film-title">${film.title}</div>
-                            ${directorDisplay}
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                ${directorDisplay}
+                                <span class="film-average">${avgNoteStars}</span>
+                            </div>
                         </div>
-                        <div>
-                            <span class="film-average">${avgNoteStars}</span>
                         </div>
-                    </div>
                     <div class="film-details">
                         ${detailPosterHtml}
                         <p><strong>Réalisateur :</strong> ${film.director || 'N/A'}</p>
