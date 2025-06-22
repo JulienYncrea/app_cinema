@@ -548,8 +548,7 @@
                     <div class="film-header" style="flex-direction: column; align-items: flex-start; width: 100%;">
                         <div class="film-title" style="width: 100%;">${film.title}</div>
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                            ${directorDisplay}
-                            <span class="film-average">${avgNoteStars}</span>
+                            <div class="film-director">${film.director || 'N/A'}</div> <span class="film-average">${avgNoteStars}</span>
                         </div>
                     </div>
                     <div class="film-details">
