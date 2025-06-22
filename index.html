@@ -437,8 +437,8 @@
 
     const TMDB_API_KEY = '16da9117701da039a64aa8ea59fb7e11';
     const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w92'; // Pour la preview
-    const TMDB_IMAGE_DETAIL_BASE_URL = 'https://image.themoviedb.org/t/p/w185'; // Pour l'affiche dans les détails
+    const TMDB_IMAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w92'; // Pour la preview dans le formulaire
+    const TMDB_IMAGE_STORAGE_BASE_URL = 'https://image.themoviedb.org/t/p/w185'; // Taille pour le stockage et l'affichage dans les détails
 
     let filmsData = [];
     let debounceTimer;
@@ -609,9 +609,9 @@
         const avgNoteStars = displayStars(moyenne(film));
         const directorDisplay = film.director ? `<div class="film-director">${film.director}</div>` : '';
         
-        // L'affiche est maintenant dans les détails
+        // L'affiche est maintenant dans les détails, on utilise directement l'URL stockée
         const posterHtmlInDetails = film.posterUrl 
-            ? `<img src="${film.posterUrl.replace('/w92/', '/w185/')}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='90px'; this.style.height='135px'; this.title='Affiche non disponible';" />`
+            ? `<img src="${film.posterUrl}" alt="Affiche de ${film.title}" class="film-poster" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; this.style.backgroundColor='#333'; this.style.width='90px'; this.style.height='135px'; this.title='Affiche non disponible';" />`
             : `<div class="film-poster" style="background-color:#333; width:90px; height:135px; display:inline-block; vertical-align:top;" title="Affiche non disponible"></div>`;
 
 
@@ -674,8 +674,9 @@
                 commentaireInput.value = filmToEdit.commentaire;
                 posterUrlInput.value = filmToEdit.posterUrl || '';
                 
-                // Utiliser la taille d'image de preview pour le champ de formulaire
+                // Utiliser la taille d'image de preview (w92) pour le champ de formulaire
                 if (filmToEdit.posterUrl) {
+                    // On remplace la taille actuelle (w185) par w92 pour la prévisualisation
                     filmPosterPreview.src = filmToEdit.posterUrl.replace('/w185/', '/w92/');
                     filmPosterPreview.style.display = 'inline-block';
                 } else {
@@ -731,7 +732,7 @@
         global: globalRatingInput.value,
         synopsis: synopsisInput.value.trim(),
         commentaire: commentaireInput.value.trim(),
-        posterUrl: posterUrlInput.value || ''
+        posterUrl: posterUrlInput.value || '' // posterUrlInput.value contient déjà l'URL w185
       };
 
       const editingId = form.dataset.editingId;
@@ -752,7 +753,8 @@
 
       form.reset();
       setStarRating(0);
-      filmPosterPreview.style.display = 'none';
+      filmPosterPreview.style.display = 'none'; // Cacher la preview après soumission
+      filmPosterPreview.src = ''; // Réinitialiser la source
       chargerFilms(globalSearchInput.value);
     });
 
@@ -772,7 +774,8 @@
     async function searchMovies(query) {
         if (query.length < 3) {
             filmSuggestionsDatalist.innerHTML = '';
-            if (!form.dataset.editingId) { 
+            // Si on efface le champ de recherche, on vide aussi les champs liés à l'API
+            if (!form.dataset.editingId) { // Seulement si on n'est pas en mode édition
                 titleInput.value = '';
                 posterUrlInput.value = '';
                 filmPosterPreview.style.display = 'none';
@@ -829,9 +832,11 @@
         const currentEditingId = form.dataset.editingId;
         const filmBeingEdited = currentEditingId ? filmsData.find(f => f.id === currentEditingId) : null;
         
+        // Si le titre saisi est le même que le film en édition, on ne touche pas aux autres champs
         if (filmBeingEdited && e.target.value === filmBeingEdited.title) {
-            // Do nothing if it's the original title of the film being edited
+            // Ne rien faire
         } else {
+            // Sinon, réinitialiser les champs liés à l'API car le film sélectionné peut changer
             titleInput.value = e.target.value;
             posterUrlInput.value = '';
             filmPosterPreview.style.display = 'none';
@@ -854,13 +859,13 @@
             
             const posterPath = selectedOption.dataset.posterPath;
             if (posterPath) {
-                // Utiliser TMDB_IMAGE_BASE_URL pour la preview dans le formulaire
+                // Utiliser TMDB_IMAGE_BASE_URL (w92) pour la preview dans le formulaire
                 const fullPosterUrlPreview = `${TMDB_IMAGE_BASE_URL}${posterPath}`;
-                // Stocker l'URL pour les détails (taille plus grande)
-                const fullPosterUrlDetail = `${TMDB_IMAGE_DETAIL_BASE_URL}${posterPath}`;
+                // Utiliser TMDB_IMAGE_STORAGE_BASE_URL (w185) pour le stockage final
+                const fullPosterUrlStorage = `${TMDB_IMAGE_STORAGE_BASE_URL}${posterPath}`;
 
-                posterUrlInput.value = fullPosterUrlDetail; // Stocker l'URL pour les détails
-                filmPosterPreview.src = fullPosterUrlPreview; // Afficher la preview
+                posterUrlInput.value = fullPosterUrlStorage; // Stocker l'URL w185
+                filmPosterPreview.src = fullPosterUrlPreview; // Afficher la preview w92
                 filmPosterPreview.style.display = 'inline-block';
             } else {
                 posterUrlInput.value = '';
@@ -886,6 +891,7 @@
                 }
             }
         } else {
+            // Si aucune option n'est sélectionnée ou le texte est modifié sans correspondance
             posterUrlInput.value = '';
             filmPosterPreview.style.display = 'none';
             filmPosterPreview.src = '';
